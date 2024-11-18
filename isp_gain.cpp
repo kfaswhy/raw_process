@@ -1,15 +1,22 @@
 #include "isp_gain.h"
-
 //#include "raw_process.h"
-U8 isp_gain_process(U16* raw, int width, int height, G_CONFIG cfg)
+U8 isp_gain_process(U16* raw, IMG_CONTEXT context, G_CONFIG cfg)
 {
-    for (int y = 0; y < height; y++) {
-        for (int x = 0; x < width; x++) {
-            int index = y * width + x;
-            raw[index] = clp_range(0, ((U32)raw[index] * cfg.isp_gain), U8MAX);
-            raw[index] = raw[index];
-        }
-    }
+	if (cfg.isp_gain_on == 0)
+	{
+		return OK;
+	}
 
-    return 0;
+
+	for (int i = 0; i < context.full_size; i++)
+	{
+		raw[i] = clp_range(0, ((U32)raw[i] * cfg.isp_gain) >> 10, U16MAX);
+	}
+#if DEBUG_MODE
+	LOG("done.");
+	RGB* rgb_data = raw2rgb(raw, context, cfg);
+	save_img_with_timestamp(rgb_data, &context, "_igain");
+#endif
+
+	return OK;
 }

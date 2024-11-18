@@ -113,6 +113,7 @@
       <PreprocessorDefinitions>_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
       <AdditionalIncludeDirectories>C:\Work\Documents\opencv454\build\include;C:\Work\Documents\opencv454\build\include\opencv2;.</AdditionalIncludeDirectories>
+      <LanguageStandard>stdcpp17</LanguageStandard>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -130,6 +131,7 @@
       <PreprocessorDefinitions>NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
       <AdditionalIncludeDirectories>C:\Work\Documents\opencv454\build\include;C:\Work\Documents\opencv454\build\include\opencv2;.</AdditionalIncludeDirectories>
+      <LanguageStandard>stdcpp17</LanguageStandard>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -141,14 +143,46 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="awb.cpp" />
+    <ClCompile Include="ccm.cpp" />
+    <ClCompile Include="cnr.cpp" />
+    <ClCompile Include="defog.cpp" />
+    <ClCompile Include="demosaic.cpp" />
+    <ClCompile Include="gic.cpp" />
     <ClCompile Include="isp_gain.cpp" />
+    <ClCompile Include="load_ini.cpp" />
+    <ClCompile Include="lsc.cpp" />
+    <ClCompile Include="ltm.cpp" />
     <ClCompile Include="ob.cpp" />
+    <ClCompile Include="r2y.cpp" />
     <ClCompile Include="raw_process.cpp" />
+    <ClCompile Include="rgbgamma.cpp" />
+    <ClCompile Include="sharp.cpp" />
+    <ClCompile Include="y2r.cpp" />
+    <ClCompile Include="ygamma.cpp" />
+    <ClCompile Include="ynr.cpp" />
+    <ClCompile Include="yuv_txi.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="awb.h" />
+    <ClInclude Include="ccm.h" />
+    <ClInclude Include="cnr.h" />
+    <ClInclude Include="defog.h" />
+    <ClInclude Include="demosaic.h" />
+    <ClInclude Include="gic.h" />
     <ClInclude Include="isp_gain.h" />
+    <ClInclude Include="load_ini.h" />
+    <ClInclude Include="lsc.h" />
+    <ClInclude Include="ltm.h" />
     <ClInclude Include="ob.h" />
+    <ClInclude Include="r2y.h" />
     <ClInclude Include="raw_process.h" />
+    <ClInclude Include="rgbgamma.h" />
+    <ClInclude Include="sharp.h" />
+    <ClInclude Include="y2r.h" />
+    <ClInclude Include="ygamma.h" />
+    <ClInclude Include="ynr.h" />
+    <ClInclude Include="yuv_txi.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
