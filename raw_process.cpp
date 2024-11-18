@@ -20,8 +20,8 @@ void load_cfg()
 	cfg.order = LITTLE_ENDIAN;
 	cfg.pattern = RGGB;
 
-	cfg.ob = 4000;
-	cfg.isp_gain = 1024;
+	cfg.ob = 4096;
+	cfg.isp_gain = 2048;
 }
 
 int main() 
@@ -39,8 +39,8 @@ int main()
         return -1;
     }
 
-	//ob_process(rawData, width, height, cfg);
-	//isp_gain_process(rawData, width, height, cfg);
+	ob_process(rawData, width, height, cfg);
+	isp_gain_process(rawData, width, height, cfg);
 
 
     // 为 RGB 通道分配内存
