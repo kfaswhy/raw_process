@@ -7,6 +7,8 @@ U8 ob_process(U16* raw, IMG_CONTEXT context, G_CONFIG cfg)
         return OK;
     }
 
+
+
     float ob_gain = (float)U16MAX / (U16MAX - cfg.ob);
     for (int i = 0; i < context.full_size; i++)
     {

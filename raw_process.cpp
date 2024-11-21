@@ -22,6 +22,7 @@ G_CONFIG cfg = { 0 };
 void load_cfg()
 {
 	cfg.bit = 16;
+	cfg.used_bit = 12;
 	cfg.order = LITTLE_ENDIAN;
 	cfg.pattern = BGGR;
 	cfg.width = 1920;
@@ -32,7 +33,7 @@ void load_cfg()
 	cfg.awb_on = 1;
 	cfg.ccm_on = 1;
 
-	cfg.ob = 4096;
+	cfg.ob = 4096 ;
 	cfg.isp_gain = 1024;
 
 	cfg.r_gain = 1233;
@@ -43,7 +44,6 @@ void load_cfg()
 		 1.0915,   0.0222, -0.0852,
 		 -0.0336 ,  1.2101 ,-0.1708,
 		 -0.0579, -0.2323 ,  1.2560
-
 	};
 
 
@@ -67,7 +67,7 @@ int main()
 	YUV* yuv_data = NULL;
 
     // 读取 RAW 数据到一维数组
-    raw = readraw(filename, context, 16, LITTLE_ENDIAN);
+    raw = readraw(filename, context, cfg);
     if (!raw)
     {
         fprintf(stderr, "读取 RAW 图像数据失败\n");
@@ -134,8 +134,9 @@ int main()
 
 
 
-U16* readraw(const char* filename, IMG_CONTEXT context, int bitDepth, ByteOrder byteOrder) {
-    int bytesPerPixel = (bitDepth + 7) / 8;  // 计算每像素的字节数
+U16* readraw(const char* filename, IMG_CONTEXT context, G_CONFIG cfg)
+{
+    int bytesPerPixel = (cfg.bit + 7) / 8;  // 计算每像素的字节数
     int dataSize = context.width * context.height * bytesPerPixel;  // 数据总大小
     U16* raw = (U16*)malloc(context.width * context.height * sizeof(U16));
 
@@ -150,14 +151,16 @@ U16* readraw(const char* filename, IMG_CONTEXT context, int bitDepth, ByteOrder 
     fclose(rawFile);
 
     for (int i = 0; i < context.width * context.height; i++) {
-        if (bitDepth == 16) {
-            raw[i] = byteOrder == LITTLE_ENDIAN
+		if (cfg.bit == 16) {
+			raw[i] = cfg.order == LITTLE_ENDIAN
                 ? buffer[i * 2] | (buffer[i * 2 + 1] << 8)
                 : (buffer[i * 2] << 8) | buffer[i * 2 + 1];
         }
         else {
-            raw[i] = buffer[i];
+			raw[i] = buffer[i];
         }
+
+		raw[i] = raw[i] << (cfg.bit - cfg.used_bit);
     }
 
     free(buffer);
