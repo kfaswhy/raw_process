@@ -2,6 +2,11 @@
 
 #include "ob.h"
 #include "isp_gain.h"
+#include "awb.h"
+#include "demosaic.h"
+#include "ccm.h"
+#include "r2y.h"
+#include "y2r.h"
 
 using namespace std;
 using namespace cv;
@@ -18,64 +23,109 @@ void load_cfg()
 {
 	cfg.bit = 16;
 	cfg.order = LITTLE_ENDIAN;
-	cfg.pattern = RGGB;
+	cfg.pattern = BGGR;
+	cfg.width = 1920;
+	cfg.height = 1080;
+	
+	cfg.ob_on = 1;
+	cfg.isp_gain_on = 1;
+	cfg.awb_on = 1;
+	cfg.ccm_on = 1;
 
 	cfg.ob = 4096;
-	cfg.isp_gain = 2048;
+	cfg.isp_gain = 1024;
+
+	cfg.r_gain = 1233;
+	cfg.b_gain = 2010;
+
+
+	float ccm_tmp[9] = {
+		 1.0915,   0.0222, -0.0852,
+		 -0.0336 ,  1.2101 ,-0.1708,
+		 -0.0579, -0.2323 ,  1.2560
+
+	};
+
+
+
+
+	memcpy(cfg.ccm, ccm_tmp, 9 * sizeof(float));
+	return;
 }
 
 int main() 
 {
 	load_cfg();
-    const int width = 1920;
-    const int height = 1080;
-    const char* filename = "1.raw";
+	IMG_CONTEXT context = { 0 };
+	context.width = cfg.width;
+	context.height = cfg.height;
+	context.full_size = context.width * context.height;
+
+    const char* filename = "raw.raw";
+	U16* raw = NULL;
+	RGB* rgb_data = NULL;
+	YUV* yuv_data = NULL;
 
     // 读取 RAW 数据到一维数组
-    U16* rawData = readRawData(filename, width, height, 16, LITTLE_ENDIAN);
-    if (!rawData)
+    raw = readraw(filename, context, 16, LITTLE_ENDIAN);
+    if (!raw)
     {
         fprintf(stderr, "读取 RAW 图像数据失败\n");
-        return -1;
+		return ERROR;
     }
 
-	ob_process(rawData, width, height, cfg);
-	isp_gain_process(rawData, width, height, cfg);
+#if DEBUG_MODE
+	rgb_data = demosaic_process(raw, context, cfg);
+	save_rgb("0.jpg", rgb_data, context, cfg);
+#endif
+
+	//进入raw域
+	ob_process(raw, context, cfg);
+#if DEBUG_MODE
+	rgb_data = demosaic_process(raw, context, cfg);
+	save_rgb("1_ob.jpg", rgb_data, context, cfg);
+#endif
+
+	isp_gain_process(raw, context, cfg);
+#if DEBUG_MODE
+	rgb_data = demosaic_process(raw, context, cfg);
+	save_rgb("2_isp_gain.jpg", rgb_data, context, cfg);
+#endif
+
+	awb_process(raw, context, cfg);
+#if DEBUG_MODE
+	rgb_data = demosaic_process(raw, context, cfg);
+	save_rgb("3_awb.jpg", rgb_data, context, cfg);
+#endif
+
+	rgb_data = demosaic_process(raw, context, cfg);
+	
+
+	//进入RGB域
+
+	ccm_process(rgb_data, context, cfg);
+#if DEBUG_MODE
+	save_rgb("10_ccm.jpg", rgb_data, context, cfg);
+#endif
 
 
-    // 为 RGB 通道分配内存
-	U8* redChannel = (U8*)calloc(width * height, sizeof(U8));
-	U8* greenChannel = (U8*)calloc(width * height, sizeof(U8));
-	U8* blueChannel = (U8*)calloc(width * height, sizeof(U8));
+	yuv_data = r2y_process(rgb_data, context, cfg);
+	
+
+	//进入YUV域
 
 
-    // 使用 debayer 将 RAW 数据转换为 RGB 通道
-    debayer(rawData, width, height, BGGR, redChannel, greenChannel, blueChannel);
-
-    // 使用 cv::Mat 创建一个 RGB 图像
-    Mat rgbImage(height, width, CV_8UC3);  // 8-bit 3-channel image
-    for (int y = 0; y < height; y++) {
-        for (int x = 0; x < width; x++) {
-            int index = y * width + x;
-            rgbImage.at<Vec3b>(y, x) = Vec3b(blueChannel[index], greenChannel[index], redChannel[index]);
-        }
-    }
-
-
-
-    // 保存图像为 JPEG 格式
-    if (!imwrite("1.jpg", rgbImage)) {
-        fprintf(stderr, "保存 RGB 图像失败\n");
-        return -1;
-    }
-
-    //printf("图像已成功转换并保存为 1.jpg\n");
+	rgb_data = y2r_process(yuv_data, context, cfg);
+	//save_rgb("99.jpg", rgb_data, context, cfg);
 
     // 释放内存
-    free(rawData);
-    free(redChannel);
-    free(greenChannel);
-    free(blueChannel);
+    free(raw); 
+	free(rgb_data);
+	free(yuv_data);
+
+	time_print_prog_end = clock();
+	LOG("time = %.2f s.", ((float)time_print_prog_end - time_print_prog_start) / 1000);
+
 
     return 0;
 }
@@ -84,10 +134,10 @@ int main()
 
 
 
-U16* readRawData(const char* filename, int width, int height, int bitDepth, ByteOrder byteOrder) {
+U16* readraw(const char* filename, IMG_CONTEXT context, int bitDepth, ByteOrder byteOrder) {
     int bytesPerPixel = (bitDepth + 7) / 8;  // 计算每像素的字节数
-    int dataSize = width * height * bytesPerPixel;  // 数据总大小
-    U16* rawData = (U16*)malloc(width * height * sizeof(U16));
+    int dataSize = context.width * context.height * bytesPerPixel;  // 数据总大小
+    U16* raw = (U16*)malloc(context.width * context.height * sizeof(U16));
 
     FILE* rawFile = fopen(filename, "rb");
     if (!rawFile) {
@@ -99,41 +149,43 @@ U16* readRawData(const char* filename, int width, int height, int bitDepth, Byte
     fread(buffer, 1, dataSize, rawFile);
     fclose(rawFile);
 
-    for (int i = 0; i < width * height; i++) {
+    for (int i = 0; i < context.width * context.height; i++) {
         if (bitDepth == 16) {
-            rawData[i] = byteOrder == LITTLE_ENDIAN
+            raw[i] = byteOrder == LITTLE_ENDIAN
                 ? buffer[i * 2] | (buffer[i * 2 + 1] << 8)
                 : (buffer[i * 2] << 8) | buffer[i * 2 + 1];
         }
         else {
-            rawData[i] = buffer[i];
+            raw[i] = buffer[i];
         }
     }
 
     free(buffer);
-    return rawData;
+    return raw;
 }
 
-void debayer(const U16* rawData, int width, int height, BayerPattern pattern,
-    U8* redChannel, U8* greenChannel, U8* blueChannel) {
-    for (int y = 0; y < height; y++) {
-        for (int x = 0; x < width; x++) {
-            int index = y * width + x;
-            U16 pixelValue = rawData[index];
+U8 save_rgb(const char* filename, RGB* rgb_data, IMG_CONTEXT context, G_CONFIG cfg) {
+	// 创建 OpenCV Mat 对象
+	int width = context.width;
+	int height = context.height;
+	cv::Mat img(height, width, CV_8UC3);
 
-            if ((y % 2 == 0 && x % 2 == 0 && pattern == RGGB) || (y % 2 == 1 && x % 2 == 1 && pattern == BGGR)) {
-                redChannel[index] = (U8)(pixelValue >> 8);
-            }
-            else if ((y % 2 == 1 && x % 2 == 1 && pattern == RGGB) || (y % 2 == 0 && x % 2 == 0 && pattern == BGGR)) {
-                blueChannel[index] = (U8)(pixelValue >> 8);
-            }
-            else {
-                greenChannel[index] = (U8)(pixelValue >> 8);
-            }
-        }
-    }
+	// 填充 Mat 数据
+	for (int y = 0; y < height; y++) {
+		for (int x = 0; x < width; x++) {
+			RGB pixel = rgb_data[y * width + x];
+			img.at<cv::Vec3b>(y, x) = cv::Vec3b(pixel.b, pixel.g, pixel.r);
+		}
+	}
+
+	// 保存到文件
+	if (cv::imwrite(filename, img)) {
+		return 1; // 保存成功
+	}
+	else {
+		return 0; // 保存失败
+	}
 }
-
 
 void safe_free(void* p)
 {

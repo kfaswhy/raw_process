@@ -1,15 +1,17 @@
 #include "ob.h"
-//#include "raw_process.h"
 
-U8 ob_process(unsigned short* raw, int width, int height, G_CONFIG cfg)
+U8 ob_process(U16* raw, IMG_CONTEXT context, G_CONFIG cfg)
 {
-    for (int y = 0; y < height; y++) {
-        for (int x = 0; x < width; x++) {
-            int index = y * width + x;
-            raw[index] = safe_sub(raw[index], cfg.ob);
-           // raw[index] *= 1;
-            raw[index]= raw[index];
-        }
+    if (cfg.ob_on == 0)
+    {
+        return OK;
     }
-    return 0;
+
+    float ob_gain = (float)U16MAX / (U16MAX - cfg.ob);
+    for (int i = 0; i < context.full_size; i++)
+    {
+        raw[i] = safe_sub(raw[i], cfg.ob);
+        raw[i] = clp_range(0, (U32)raw[i] * ob_gain, U16MAX);
+    }
+    return OK;
 }

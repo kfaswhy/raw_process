@@ -40,7 +40,7 @@ typedef unsigned char U8;
 #define LOG(...) {printf("%s [%d]: ", __FUNCTION__, __LINE__); printf(__VA_ARGS__); printf("\n"); }
 
 
-typedef enum { RGGB, BGGR, GBRG, GRBG } BayerPattern;  // Bayer 格式枚举类型
+typedef enum { RGGB, GRBG, GBRG, BGGR} BayerPattern;  // Bayer 格式枚举类型
 typedef enum { LITTLE_ENDIAN, BIG_ENDIAN } ByteOrder;  // 字节顺序枚举类型
 
 typedef struct _G_CONFIG
@@ -48,9 +48,21 @@ typedef struct _G_CONFIG
 	U8 bit;
 	U8 order;
 	U8 pattern;
+	U16 width;
+	U16 height;
+
+
+	U8 ob_on;
+	U8 isp_gain_on;
+	U8 awb_on;
+	U8 ccm_on;
+
 
 	U16 ob;
+	U16 r_gain;
+	U16 b_gain;
 	U16 isp_gain;
+	float ccm[9];
 }G_CONFIG;
 
 
@@ -61,6 +73,13 @@ typedef struct _RGB
 	U8 r;
 }RGB;
 
+typedef struct _YUV
+{
+	U8 y;
+	U8 u;
+	U8 v;
+} YUV;
+
 typedef struct _IMG_CONTEXT
 {
 	BITMAPFILEHEADER fileHeader;
@@ -68,6 +87,7 @@ typedef struct _IMG_CONTEXT
 
 	U16 height;
 	U16 width;
+	U32 full_size;
 
 	int PaddingSize;
 	U8* pad;
@@ -79,11 +99,10 @@ void load_cfg();
 int main();
 
 // 函数声明：读取 RAW 数据到一维数组
-U16* readRawData(const char* filename, int width, int height, int bitDepth, ByteOrder byteOrder);
 
-// 函数声明：将 Bayer 格式的数据转换为 R、G、B 三个通道的图像
-void debayer(const U16* rawData, int width, int height, BayerPattern pattern,
-	U8* redChannel, U8* greenChannel, U8* blueChannel);
+U16* readraw(const char* filename, IMG_CONTEXT context, int bitDepth, ByteOrder byteOrder);
+
+U8 save_rgb(const char* filename, RGB* rgb, IMG_CONTEXT context, G_CONFIG cfg);
 
 void safe_free(void* p);
 
