@@ -40,7 +40,7 @@ typedef unsigned char U8;
 #define LOG(...) {printf("%s [%d]: ", __FUNCTION__, __LINE__); printf(__VA_ARGS__); printf("\n"); }
 
 
-typedef enum { RGGB, GRBG, GBRG, BGGR} BayerPattern;  // Bayer 格式枚举类型
+typedef enum { RGGB = 0, GRBG = 1, GBRG = 2, BGGR = 3 } BayerPattern;  // Bayer 格式枚举类型
 typedef enum { LITTLE_ENDIAN, BIG_ENDIAN } ByteOrder;  // 字节顺序枚举类型
 
 typedef struct _G_CONFIG
@@ -98,6 +98,8 @@ typedef struct _IMG_CONTEXT
 void load_cfg();
 
 int main();
+
+RGB* raw2rgb(U16* raw, IMG_CONTEXT context, G_CONFIG cfg);
 
 // 函数声明：读取 RAW 数据到一维数组
 

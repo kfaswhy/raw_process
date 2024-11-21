@@ -24,9 +24,9 @@ void load_cfg()
 	cfg.bit = 16;
 	cfg.used_bit = 12;
 	cfg.order = LITTLE_ENDIAN;
-	cfg.pattern = BGGR;
-	cfg.width = 1920;
-	cfg.height = 1080;
+	cfg.pattern = RGGB;
+	cfg.width = 2592;
+	cfg.height = 1536;
 	
 	cfg.ob_on = 1;
 	cfg.isp_gain_on = 1;
@@ -34,10 +34,10 @@ void load_cfg()
 	cfg.ccm_on = 1;
 
 	cfg.ob = 4096 ;
-	cfg.isp_gain = 1024;
+	cfg.isp_gain = 2000;
 
-	cfg.r_gain = 1233;
-	cfg.b_gain = 2010;
+	cfg.r_gain = 1500;
+	cfg.b_gain = 2700;
 
 
 	float ccm_tmp[9] = {
@@ -61,7 +61,7 @@ int main()
 	context.height = cfg.height;
 	context.full_size = context.width * context.height;
 
-    const char* filename = "raw.raw";
+    const char* filename = "data/raw.raw";
 	U16* raw = NULL;
 	RGB* rgb_data = NULL;
 	YUV* yuv_data = NULL;
@@ -75,37 +75,40 @@ int main()
     }
 
 #if DEBUG_MODE
-	rgb_data = demosaic_process(raw, context, cfg);
-	save_rgb("0.jpg", rgb_data, context, cfg);
+	rgb_data = raw2rgb(raw, context, cfg);
+	save_rgb("0.bmp", rgb_data, context, cfg);
 #endif
 
 	//进入raw域
 	ob_process(raw, context, cfg);
 #if DEBUG_MODE
-	rgb_data = demosaic_process(raw, context, cfg);
-	save_rgb("1_ob.jpg", rgb_data, context, cfg);
+	rgb_data = raw2rgb(raw, context, cfg);
+	save_rgb("1_ob.bmp", rgb_data, context, cfg);
 #endif
 
 	isp_gain_process(raw, context, cfg);
 #if DEBUG_MODE
-	rgb_data = demosaic_process(raw, context, cfg);
-	save_rgb("2_isp_gain.jpg", rgb_data, context, cfg);
+	rgb_data = raw2rgb(raw, context, cfg);
+	save_rgb("2_isp_gain.bmp", rgb_data, context, cfg);
 #endif
 
-	awb_process(raw, context, cfg);
 #if DEBUG_MODE
 	rgb_data = demosaic_process(raw, context, cfg);
-	save_rgb("3_awb.jpg", rgb_data, context, cfg);
+	save_rgb("3_pre_awb.bmp", rgb_data, context, cfg);
+#endif
+	awb_process(raw, context, cfg);
+#if DEBUG_MODE
+	rgb_data = raw2rgb(raw, context, cfg);
+	save_rgb("3_awb.bmp", rgb_data, context, cfg);
 #endif
 
 	rgb_data = demosaic_process(raw, context, cfg);
-	
-
+	save_rgb("4_demosaic.bmp", rgb_data, context, cfg);
 	//进入RGB域
 
 	ccm_process(rgb_data, context, cfg);
 #if DEBUG_MODE
-	save_rgb("10_ccm.jpg", rgb_data, context, cfg);
+	save_rgb("10_ccm.bmp", rgb_data, context, cfg);
 #endif
 
 
@@ -116,7 +119,7 @@ int main()
 
 
 	rgb_data = y2r_process(yuv_data, context, cfg);
-	//save_rgb("99.jpg", rgb_data, context, cfg);
+	//save_rgb("99.bmp", rgb_data, context, cfg);
 
     // 释放内存
     free(raw); 
@@ -130,7 +133,117 @@ int main()
     return 0;
 }
 
+RGB* raw2rgb(U16* raw, IMG_CONTEXT context, G_CONFIG cfg) {
+    // 获取图像的宽高和 Bayer Pattern
+    U16 width = context.width;
+    U16 height = context.height;
+    BayerPattern pattern = (BayerPattern)cfg.pattern;
+    ByteOrder order = (ByteOrder)cfg.order;
+    const U8 bit_depth = cfg.bit;
+    const int bit_shift = cfg.bit - 8;
 
+    // 确定最大有效值
+    U16 max_val = (1 << bit_depth) - 1;
+
+    // 确保原始数据按大小端顺序处理
+    for (U32 i = 0; i < width * height; i++) {
+        if (order == LITTLE_ENDIAN) {
+            raw[i] = raw[i] & max_val; // 提取低 bit_depth 位
+        }
+        else if (order == BIG_ENDIAN) {
+            raw[i] = ((raw[i] & 0xFF) << 8 | (raw[i] >> 8)) & max_val;
+        }
+    }
+
+    // 分配 RGB 数据的内存
+    RGB* rgb_data = (RGB*)malloc(width * height * sizeof(RGB));
+    if (!rgb_data) {
+        fprintf(stderr, "Memory allocation for RGB data failed.\n");
+        return NULL;
+    }
+
+    // 根据 Bayer Pattern 进行插值处理
+    for (U16 y = 0; y < height; y++) {
+        for (U16 x = 0; x < width; x++) {
+            RGB pixel = { 0, 0, 0 };
+            U32 val = 0;
+
+            // 插值计算
+            switch (pattern) {
+            case RGGB:
+                if ((y % 2 == 0) && (x % 2 == 0)) //R
+                {
+                    val = raw[y * width + x] >> bit_shift;
+                    pixel.r = clp_range(0, val, U8MAX);
+					pixel.g = 0;
+					pixel.b = 0;
+                }
+                else if ((y % 2 == 0) && (x % 2 == 1)) //GR
+                {
+                    val = raw[y * width + x] >> bit_shift;
+                    pixel.g = clp_range(0, val, U8MAX);
+                    pixel.r = 0;
+                    pixel.b = 0;
+                }
+                else if ((y % 2 == 1) && (x % 2 == 0)) //GB
+                {
+                    val = raw[y * width + x] >> bit_shift;
+                    pixel.g = clp_range(0, val, U8MAX);
+					pixel.r = 0;
+					pixel.b = 0;
+                }
+                else //B
+                {
+                    val = raw[y * width + x] >> bit_shift;
+                    pixel.b = clp_range(0, val, U8MAX);
+					pixel.r = 0;
+					pixel.g = 0;
+                }
+				break;
+            case BGGR:
+                if ((y % 2 == 0) && (x % 2 == 0)) //B
+                {
+					val = raw[y * width + x] >> bit_shift;
+					pixel.b = clp_range(0, val, U8MAX);
+					pixel.r = 0;
+					pixel.g = 0;
+                }
+                else if ((y % 2 == 0) && (x % 2 == 1)) //GB
+                {
+					val = raw[y * width + x] >> bit_shift;
+					pixel.g = clp_range(0, val, U8MAX);
+					pixel.r = 0;
+					pixel.b = 0;
+                }
+                else if ((y % 2 == 1) && (x % 2 == 0)) //GR
+                {
+					val = raw[y * width + x] >> bit_shift;
+					pixel.g = clp_range(0, val, U8MAX);
+					pixel.r = 0;
+					pixel.b = 0;
+                }
+                else //R
+                {
+					val = raw[y * width + x] >> bit_shift;
+					pixel.r = clp_range(0, val, U8MAX);
+					pixel.g = 0;
+					pixel.b = 0;
+                }
+                break;
+                // Other patterns (GRBG, GBRG, BGGR) can be implemented similarly
+            default:
+                fprintf(stderr, "Unsupported Bayer Pattern.\n");
+                free(rgb_data);
+                return NULL;
+            }
+
+            // 保存到 RGB 数据
+            rgb_data[y * width + x] = pixel;
+        }
+    }
+
+    return rgb_data;
+}
 
 
 

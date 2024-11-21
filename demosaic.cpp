@@ -30,8 +30,6 @@ RGB* demosaic_process(U16* raw, IMG_CONTEXT context, G_CONFIG cfg) {
         return NULL;
     }
 
-    
-
     // 根据 Bayer Pattern 进行插值处理
     for (U16 y = 0; y < height; y++) {
         for (U16 x = 0; x < width; x++) {
@@ -95,6 +93,7 @@ RGB* demosaic_process(U16* raw, IMG_CONTEXT context, G_CONFIG cfg) {
                         raw[bottom * width + left] + raw[bottom * width + right]) >> (2 + bit_shift);
                     pixel.r = clp_range(0, val, U8MAX); 
                 }
+                break;
             case BGGR:
                 if ((y % 2 == 0) && (x % 2 == 0)) //B
                 {
