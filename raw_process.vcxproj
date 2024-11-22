@@ -148,7 +148,9 @@
     <ClCompile Include="ob.cpp" />
     <ClCompile Include="r2y.cpp" />
     <ClCompile Include="raw_process.cpp" />
+    <ClCompile Include="rgbgamma.cpp" />
     <ClCompile Include="y2r.cpp" />
+    <ClCompile Include="ygamma.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="awb.h" />
@@ -158,7 +160,9 @@
     <ClInclude Include="ob.h" />
     <ClInclude Include="r2y.h" />
     <ClInclude Include="raw_process.h" />
+    <ClInclude Include="rgbgamma.h" />
     <ClInclude Include="y2r.h" />
+    <ClInclude Include="ygamma.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

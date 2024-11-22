@@ -57,6 +57,8 @@ typedef struct _G_CONFIG
 	U8 isp_gain_on;
 	U8 awb_on;
 	U8 ccm_on;
+	U8 ygamma_on;
+	U8 rgbgamma_on;
 
 
 	U16 ob;
@@ -64,6 +66,8 @@ typedef struct _G_CONFIG
 	U16 b_gain;
 	U16 isp_gain;
 	float ccm[9];
+
+	U16 gamma[256];
 }G_CONFIG;
 
 

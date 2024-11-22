@@ -39,6 +39,12 @@
     <ClCompile Include="awb.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
+    <ClCompile Include="ygamma.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="rgbgamma.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="raw_process.h">
@@ -63,6 +69,12 @@
       <Filter>头文件</Filter>
     </ClInclude>
     <ClInclude Include="awb.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="ygamma.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="rgbgamma.h">
       <Filter>头文件</Filter>
     </ClInclude>
   </ItemGroup>
