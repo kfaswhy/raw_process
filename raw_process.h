@@ -56,15 +56,22 @@ typedef struct _G_CONFIG
 	U8 ob_on;
 	U8 isp_gain_on;
 	U8 awb_on;
+	U8 ltm_on;
 	U8 ccm_on;
 	U8 ygamma_on;
 	U8 rgbgamma_on;
 
 
 	U16 ob;
+	U16 isp_gain;
 	U16 r_gain;
 	U16 b_gain;
-	U16 isp_gain;
+	
+	float ltm_strength; // 整体强度 (0~1, 1 表示完全应用 LTM)
+	U8 ltm_vblk;    //纵向分块数
+	U8 ltm_hblk;    //纵向分块数
+	float ltm_cst_thdr;
+
 	float ccm[9];
 
 	U16 gamma[256];

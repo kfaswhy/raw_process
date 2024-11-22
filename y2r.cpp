@@ -25,6 +25,7 @@ RGB* y2r_process(YUV* yuv, IMG_CONTEXT context, G_CONFIG cfg)
         rgb[i].g = clp_range(0, g, 255);
         rgb[i].b = clp_range(0, b, 255);
     }
+    //LOG("done.");
 
     return rgb; 
 }

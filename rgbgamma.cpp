@@ -5,7 +5,7 @@ U8 rgbgamma_process(RGB* rgb, IMG_CONTEXT context, G_CONFIG cfg)
     if (cfg.rgbgamma_on == 0)
     {
         return OK;
-    }
+    } 
     
     RGB* p_rgb = &rgb[0];
     for (int i = 0; i < context.full_size; i++)
@@ -22,5 +22,6 @@ U8 rgbgamma_process(RGB* rgb, IMG_CONTEXT context, G_CONFIG cfg)
         p_rgb++;
     }
 
+    LOG("done.");
     return OK;
 }

@@ -28,6 +28,7 @@ U8 ccm_process(RGB* rgb, IMG_CONTEXT context, G_CONFIG cfg)
 
 
 
+    LOG("done.");
 
     return OK;
 }

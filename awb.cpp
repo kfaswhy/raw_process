@@ -39,6 +39,9 @@ U8 awb_process(U16* raw, IMG_CONTEXT context, G_CONFIG cfg)
                 fprintf(stderr, "Unsupported Bayer Pattern.\n");
             }
         }
-    }
-   return OK;
+    } 
+    LOG("done.");
+
+
+    return OK;
 }

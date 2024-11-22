@@ -45,6 +45,9 @@
     <ClCompile Include="rgbgamma.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
+    <ClCompile Include="ltm.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="raw_process.h">
@@ -75,6 +78,9 @@
       <Filter>头文件</Filter>
     </ClInclude>
     <ClInclude Include="rgbgamma.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="ltm.h">
       <Filter>头文件</Filter>
     </ClInclude>
   </ItemGroup>

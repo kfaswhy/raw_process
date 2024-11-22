@@ -3,6 +3,7 @@
 #include "ob.h"
 #include "isp_gain.h"
 #include "awb.h"
+#include "ltm.h"
 #include "demosaic.h"
 #include "ccm.h"
 #include "rgbgamma.h"
@@ -33,15 +34,21 @@ void load_cfg()
 	cfg.ob_on = 1;
 	cfg.isp_gain_on = 1;
 	cfg.awb_on = 1;
+	cfg.ltm_on = 1;
 	cfg.ccm_on = 1;
 	cfg.rgbgamma_on = 1;
 	cfg.ygamma_on = 0;
 
 	cfg.ob = 4096 ;
-	cfg.isp_gain = 1024;
+	cfg.isp_gain = 1524;
 
-	cfg.r_gain = 1495;
-	cfg.b_gain = 2683;
+	cfg.r_gain = 1400;
+	cfg.b_gain = 2800;
+
+	cfg.ltm_strength = 0.2;
+	cfg.ltm_vblk = 4;
+	cfg.ltm_hblk = 2;
+	cfg.ltm_cst_thdr = 1;
 
 	float ccm_tmp[9] = {
 		0.9923,   0.0977, -0.1112,
@@ -52,7 +59,7 @@ void load_cfg()
 
 	U16 gamma_tmp[256] =
 	{
-		0,14,27,40,52,65,77,89,101,113,124,135,146,157,168,178,189,199,209,219,228,238,247,257,266,275,283,292,301,309,318,326,334,342,350,357,365,373,380,387,395,402,409,416,423,429,436,443,449,456,462,468,474,481,487,493,498,504,510,516,521,527,532,538,543,548,554,559,564,569,574,579,584,589,593,598,603,607,612,616,621,625,630,634,638,643,647,651,655,659,663,667,671,675,679,683,687,690,694,698,701,705,709,712,716,719,723,726,729,733,736,739,743,746,749,752,755,758,762,765,768,771,774,777,780,782,785,788,791,794,797,799,802,805,808,810,813,816,818,821,823,826,828,831,833,836,838,841,843,845,848,850,853,855,857,859,862,864,866,868,871,873,875,877,879,881,883,885,888,890,892,894,896,898,900,902,904,905,907,909,911,913,915,917,919,921,922,924,926,928,930,931,933,935,937,938,940,942,943,945,947,948,950,952,953,955,956,958,960,961,963,964,966,967,969,970,972,973,975,976,978,979,981,982,983,985,986,988,989,991,992,993,995,996,997,999,1000,1001,1003,1004,1005,1007,1008,1009,1010,1012,1013,1014,1015,1017,1018,1019,1020,1021,1023
+		0,14,27,40,52,65,77,89,101,113,124,135,146,157,168,178,189,199,209,219,228,238,247,257,266,275,283,292,301,309,318,326,334,342,350,357,365,373,380,387,395,402,409,416,423,429,436,443,449,456,462,468,474,481,487,493,498,504,510,516,521,527,532,538,543,548,554,559,564,569,574,579,584,589,593,598,603,607,612,616,621,625,630,634,638,643,647,651,655,659,663,667,671,675,679,683,687,690,694,698,701,705,709,712,716,719,723,726,729,733,736,739,743,746,749,752,755,758,762,765,768,771,774,777,780,782,785,788,791,794,797,799,802,805,808,810,813,816,818,821,823,826,828,831,833,836,838,841,843,845,848,850,853,855,857,859,862,864,866,868,871,873,875,877,879,881,883,885,888,890,892,894,896,898,900,902,904,905,907,909,911,913,915,917,919,921,922,924,926,928,930,931,933,935,937,938,940,942,943,945,947,948,950,952,953,955,956,958,960,961,963,964,966,967,969,970,972,973,975,976,978,979,981,982,983,985,986,988,989,991,992,993,995,996,997,999,1000,1001,1003,1004,1005,1007,1008,1009,1010,1012,1013,1014,1015,1017,1018,1019,1020,1021,1023,1023
 	};
 
 	
@@ -101,28 +108,38 @@ int main()
 #endif
 
 #if DEBUG_MODE
-	rgb_data = demosaic_process(raw, context, cfg);
-	save_rgb("3_pre_awb.bmp", rgb_data, context, cfg);
+	rgb_data = raw2rgb(raw, context, cfg);
+	save_rgb("3.0_pre_awb.bmp", rgb_data, context, cfg);
 #endif
 	awb_process(raw, context, cfg);
 #if DEBUG_MODE
 	rgb_data = raw2rgb(raw, context, cfg);
-	save_rgb("3_awb.bmp", rgb_data, context, cfg);
+	save_rgb("3.1_awb.bmp", rgb_data, context, cfg);
+#endif
+
+	ltm_process(raw, context, cfg);
+#if DEBUG_MODE
+	rgb_data = raw2rgb(raw, context, cfg);
+	save_rgb("4_ltm.bmp", rgb_data, context, cfg);
 #endif
 
 	rgb_data = demosaic_process(raw, context, cfg);
-	save_rgb("4_demosaic.bmp", rgb_data, context, cfg);
-	//进入RGB域
-
-	ccm_process(rgb_data, context, cfg);
 #if DEBUG_MODE
-	save_rgb("10_ccm.bmp", rgb_data, context, cfg);
+	save_rgb("5_demosaic.bmp", rgb_data, context, cfg);
 #endif
+	//进入RGB域
 
 	rgbgamma_process(rgb_data, context, cfg);
 #if DEBUG_MODE
-	save_rgb("11_rgbgamma.bmp", rgb_data, context, cfg);
+	save_rgb("10_rgbgamma.bmp", rgb_data, context, cfg);
 #endif
+
+
+	ccm_process(rgb_data, context, cfg);
+#if DEBUG_MODE
+	save_rgb("11_ccm.bmp", rgb_data, context, cfg);
+#endif
+
 
 	yuv_data = r2y_process(rgb_data, context, cfg);
 	//进入YUV域
@@ -133,7 +150,7 @@ int main()
 	save_rgb("15_ygamma.bmp", rgb_data, context, cfg);
 #endif
 	rgb_data = y2r_process(yuv_data, context, cfg);
-	//save_rgb("99.bmp", rgb_data, context, cfg);
+	save_rgb("99_final.bmp", rgb_data, context, cfg);
 
     // 释放内存
     free(raw); 
