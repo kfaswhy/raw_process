@@ -9,6 +9,7 @@
 #include "rgbgamma.h"
 #include "r2y.h"
 #include "ygamma.h"
+#include "sharp.h"
 #include "y2r.h"
 
 using namespace std;
@@ -38,6 +39,7 @@ void load_cfg()
 	cfg.ccm_on = 1;
 	cfg.rgbgamma_on = 1;
 	cfg.ygamma_on = 0;
+	cfg.sharp_on = 1;
 
 	cfg.ob = 4096 ;
 	cfg.isp_gain = 1524;
@@ -149,6 +151,14 @@ int main()
 	rgb_data = y2r_process(yuv_data, context, cfg); 
 	save_rgb("15_ygamma.bmp", rgb_data, context, cfg);
 #endif
+
+	sharp_process(yuv_data, context, cfg);
+#if DEBUG_MODE
+	rgb_data = y2r_process(yuv_data, context, cfg);
+	save_rgb("20_sharp.bmp", rgb_data, context, cfg);
+#endif
+
+
 	rgb_data = y2r_process(yuv_data, context, cfg);
 	save_rgb("99_final.bmp", rgb_data, context, cfg);
 

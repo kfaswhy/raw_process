@@ -58,9 +58,9 @@ typedef struct _G_CONFIG
 	U8 awb_on;
 	U8 ltm_on;
 	U8 ccm_on;
-	U8 ygamma_on;
 	U8 rgbgamma_on;
-
+	U8 ygamma_on;
+	U8 sharp_on;
 
 	U16 ob;
 	U16 isp_gain;
