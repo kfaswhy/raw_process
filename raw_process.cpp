@@ -26,23 +26,23 @@ G_CONFIG cfg = { 0 };
 void load_cfg()
 {
 	cfg.bit = 16;
-	cfg.used_bit = 12;
+	cfg.used_bit = 10;
 	cfg.order = LITTLE_ENDIAN;
-	cfg.pattern = RGGB;
-	cfg.width = 2592;
-	cfg.height = 1536;
+	cfg.pattern = BGGR;
+	cfg.width = 1440;
+	cfg.height = 1048;
 	
 	cfg.ob_on = 1;
 	cfg.isp_gain_on = 1;
 	cfg.awb_on = 1;
-	cfg.ltm_on = 1;
+	cfg.ltm_on = 0;
 	cfg.ccm_on = 1;
 	cfg.rgbgamma_on = 1;
 	cfg.ygamma_on = 0;
 	cfg.sharp_on = 1;
 
-	cfg.ob = 4096 ;
-	cfg.isp_gain = 1524;
+	cfg.ob = 1024 ;
+	cfg.isp_gain = 1024;
 
 	cfg.r_gain = 1400;
 	cfg.b_gain = 2800;
@@ -93,6 +93,7 @@ int main()
 
 #if DEBUG_MODE
 	rgb_data = raw2rgb(raw, context, cfg);
+	//rgb_data = demosaic_process(raw, context, cfg);
 	save_rgb("0.bmp", rgb_data, context, cfg);
 #endif
 
