@@ -1,9 +1,64 @@
 #include "sharp.h"
 // Simple sharpen kernel (example: a 3x3 filter)
-int sharp_kernel[3][3] = {
-    { 0, -1,  0 },
-    {-1,  4, -1 },
-    { 0, -1,  0 }
+
+#define K_SIZE 5
+
+int sharp_kernel[K_SIZE][K_SIZE] = {
+    {0,0,0,0,0},
+    {0,0,-1,0,0},
+    {0,-1,4,-1,0},
+    {0,0,-1,0,0},
+    {0,0,0,0,0}
+};
+
+int sharp_kernel2[K_SIZE][K_SIZE] = {
+    {0,0,0,0,0},
+    {0,-1,-1,-1,0},
+    {0,-1,8,-1,0},
+    {0,-1,-1,-1,0},
+    {0,0,0,0,0}
+};
+
+int sharp_kernel1[K_SIZE][K_SIZE] = {
+    {0, 0, -1,  0, 0 },
+    {0, -1, -2,  -1, 0 },
+    {-1, -2,  16, -2, -1},
+    {0, -1, -2,  -1, 0 },
+    {0, 0, -1,  0, 0 },
+};
+
+int sharp_kernel8[K_SIZE][K_SIZE] = {
+    {0, 0, -2,  0, 0 },
+    {0, -2, 2,  -2, 0 },
+    {-2, 2,  8, 2, -2},
+    {0, -2, 2,  -2, 0 },
+    {0, 0, -2,  0, 0 },
+};
+
+int sharp_kernel4[K_SIZE][K_SIZE] = {
+    {0,0,0,0,0},
+    {-1,-1,-1,-1,-1},
+    {2,2,2,2,2},
+    {-1,-1,-1,-1,-1},
+    {0,0,0,0,0}
+};
+
+int sharp_kernel5[K_SIZE][K_SIZE] = {
+    {0,-1,2,-1,0},
+    {0,-1,2,-1,0},
+    {0,-1,2,-1,0},
+    {0,-1,2,-1,0},
+    {0,-1,2,-1,0}
+};
+
+int sharp_kernel9[K_SIZE][K_SIZE] = {
+    {-1,0,2,-1,0},
+    {-1,0,2,-1,0},
+    {-1,0,2,-1,0},
+    {-1,0,2,-1,0},
+    {-1,0,2,-1,0}
+    
+
 };
 
 U8 sharp_process(YUV* yuv, IMG_CONTEXT context, G_CONFIG cfg)
@@ -13,39 +68,38 @@ U8 sharp_process(YUV* yuv, IMG_CONTEXT context, G_CONFIG cfg)
         return OK;
     }
 
-    // Apply sharpen filter
-    for (U16 y = 0; y < context.height; ++y) {
-        for (U16 x = 0; x < context.width; ++x) {
-            int new_y = 0, new_u = 0, new_v = 0;
+    S16* y_sharp = (S16*)calloc(context.height * context.width, sizeof(S16));
 
-            // Apply sharpening filter to Y, U, V channels separately
-            for (int ky = -1; ky <= 1; ++ky) {
-                for (int kx = -1; kx <= 1; ++kx) {
+    // Apply sharpen filter
+    for (U16 y = 2; y < context.height; ++y) {
+        for (U16 x = 2; x < context.width; ++x) {
+            S32 new_y = 0;
+            
+            for (int ky = -K_SIZE / 2; ky <= K_SIZE / 2; ++ky) {
+                for (int kx = -K_SIZE / 2; kx <= K_SIZE / 2; ++kx) {
                     // Calculate the pixel index considering boundary conditions
                     int ny = y + ky;
                     int nx = x + kx;
 
-                    // Boundary
-                    // check: if out of bounds, use the edge pixel
-                    if (ny < 0) ny = 0;
-                    if (ny >= context.height) ny = context.height - 1;
-                    if (nx < 0) nx = 0;
-                    if (nx >= context.width) nx = context.width - 1;
-
+                    ny = clp_range(0, ny, (context.height - 1));
+                    nx = clp_range(0, nx, (context.width - 1));
 
                     int pixel_idx = ny * context.width + nx;
 
-                    new_y += sharp_kernel[ky + 1][kx + 1] * yuv[pixel_idx].y;
-                    //new_u += sharp_kernel[ky + 1][kx + 1] * yuv[pixel_idx].u;
-                    //new_v += sharp_kernel[ky + 1][kx + 1] * yuv[pixel_idx].v;
+
+                    new_y += sharp_kernel[ky + K_SIZE / 2][kx + K_SIZE / 2] * yuv[pixel_idx].y;
                 }
             }
-
-            // Ensure the values are within the 8-bit range [0, 255]
-            yuv[y * context.width + x].y = (U8)(new_y > 255 ? 255 : (new_y < 0 ? 0 : new_y));
-            //yuv[y * context.width + x].u = (U8)(new_u > 255 ? 255 : (new_u < 0 ? 0 : new_u));
-            //yuv[y * context.width + x].v = (U8)(new_v > 255 ? 255 : (new_v < 0 ? 0 : new_v));
+            //new_y += 128;
+            y_sharp[y * context.width + x] = new_y;
         }
+    }
+
+    for (int i = 0; i < context.full_size; i++)
+    {
+        U16 tmp = yuv[i].y + 0.5*y_sharp[i];
+       //tmp = y_sharp[i]+128;
+        yuv[i].y = clp_range(0, tmp, U8MAX);
     }
 
     LOG("done.");

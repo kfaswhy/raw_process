@@ -26,26 +26,26 @@ G_CONFIG cfg = { 0 };
 void load_cfg()
 {
 	cfg.bit = 16;
-	cfg.used_bit = 10;
+	cfg.used_bit = 12;
 	cfg.order = LITTLE_ENDIAN;
-	cfg.pattern = BGGR;
-	cfg.width = 1440;
-	cfg.height = 1048;
+	cfg.pattern = RGGB;
+	cfg.width = 2592;
+	cfg.height = 1536;
 	
 	cfg.ob_on = 1;
-	cfg.isp_gain_on = 1;
+	cfg.isp_gain_on = 0;
 	cfg.awb_on = 1;
 	cfg.ltm_on = 0;
-	cfg.ccm_on = 1;
-	cfg.rgbgamma_on = 1;
+	cfg.ccm_on = 0;
+	cfg.rgbgamma_on = 0;
 	cfg.ygamma_on = 0;
 	cfg.sharp_on = 1;
 
 	cfg.ob = 1024 ;
 	cfg.isp_gain = 1024;
 
-	cfg.r_gain = 1400;
-	cfg.b_gain = 2800;
+	cfg.r_gain = 1800;
+	cfg.b_gain = 2000;
 
 	cfg.ltm_strength = 0.2;
 	cfg.ltm_vblk = 4;
@@ -153,9 +153,14 @@ int main()
 	save_rgb("15_ygamma.bmp", rgb_data, context, cfg);
 #endif
 
+#if DEBUG_MODE
+	rgb_data = yyy2rgb_process(yuv_data, context, cfg);
+	save_rgb("19_pre_sharp.bmp", rgb_data, context, cfg);
+#endif
+
 	sharp_process(yuv_data, context, cfg);
 #if DEBUG_MODE
-	rgb_data = y2r_process(yuv_data, context, cfg);
+	rgb_data = yyy2rgb_process(yuv_data, context, cfg);
 	save_rgb("20_sharp.bmp", rgb_data, context, cfg);
 #endif
 
@@ -321,6 +326,30 @@ U16* readraw(const char* filename, IMG_CONTEXT context, G_CONFIG cfg)
     free(buffer);
     return raw;
 }
+
+RGB* yyy2rgb_process(YUV* yuv, IMG_CONTEXT context, G_CONFIG cfg)
+{
+	if (!yuv) {
+		std::cerr << "Invalid input parameters!" << std::endl;
+		return NULL; // 错误代码
+	}
+
+	RGB* rgb = (RGB*)calloc(context.height * context.width, sizeof(RGB));
+
+	RGB* tmp = rgb;
+	for (U32 i = 0; i < context.full_size; ++i) 
+	{
+		yuv[i].y = clp_range(0, yuv[i].y, 255);
+		tmp->r = yuv[i].y;
+		tmp->g = yuv[i].y;
+		tmp->b = yuv[i].y;
+		tmp++;
+	}
+	LOG("done.");
+
+	return rgb;
+}
+
 
 U8 save_rgb(const char* filename, RGB* rgb_data, IMG_CONTEXT context, G_CONFIG cfg) {
 	// 创建 OpenCV Mat 对象

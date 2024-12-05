@@ -21,6 +21,7 @@ typedef long long S64;
 typedef unsigned int U32;
 typedef int S32;
 typedef unsigned short U16;
+typedef short S16;
 typedef unsigned char U8;
 
 #define U16MAX (0xFFFF)
@@ -115,6 +116,8 @@ RGB* raw2rgb(U16* raw, IMG_CONTEXT context, G_CONFIG cfg);
 // 函数声明：读取 RAW 数据到一维数组
 
 U16* readraw(const char* filename, IMG_CONTEXT context, G_CONFIG cfg);
+
+RGB* yyy2rgb_process(YUV* yuv, IMG_CONTEXT context, G_CONFIG cfg);
 
 U8 save_rgb(const char* filename, RGB* rgb, IMG_CONTEXT context, G_CONFIG cfg);
 
