@@ -70,115 +70,101 @@ void load_cfg()
 	return;
 }
 
-int main() 
+// 定义冻结函数，接收多帧图片并输出冻结效果图
+void freeze(vector<Mat>& frames, Mat& result)
 {
-	load_cfg();
-	IMG_CONTEXT context = { 0 };
-	context.width = cfg.width;
-	context.height = cfg.height;
-	context.full_size = context.width * context.height;
+	// 将每帧图片转换为灰度图像，便于计算光流场
+	vector<Mat> grayframe;
+	for (const auto& frame : frames)
+	{
+		Mat gray;
+		cvtColor(frame, gray, COLOR_BGR2GRAY); // 转为灰度
+		grayframe.push_back(gray); // 保存灰度图
+	}
 
-    const char* filename = "data/raw.raw";
-	U16* raw = NULL;
-	RGB* rgb_data = NULL;
-	YUV* yuv_data = NULL;
+	// 以第一帧灰度图作为基准帧，后续帧需对齐到该帧
+	Mat baseframe = grayframe[0];
+	vector<Mat> alignedframe; // 保存对齐后的帧
+	alignedframe.push_back(frames[0]); // 第一帧直接加入对齐帧列表
 
-    // 读取 RAW 数据到一维数组
-    raw = readraw(filename, context, cfg);
-    if (!raw)
-    {
-        fprintf(stderr, "读取 RAW 图像数据失败\n");
-		return ERROR;
-    }
+	// 对其余帧进行光流计算和配准
+	for (size_t i = 1; i < grayframe.size(); ++i)
+	{
+		Mat flow, warped;
+		// 使用Farneback方法计算光流场，获取当前帧到基准帧的位移信息
+		calcOpticalFlowFarneback(baseframe, grayframe[i], flow,
+			0.5, 3, 15, 3, 5, 1.2, 0);
 
-#if DEBUG_MODE
-	rgb_data = raw2rgb(raw, context, cfg);
-	//rgb_data = demosaic_process(raw, context, cfg);
-	save_rgb("0.bmp", rgb_data, context, cfg);
-#endif
+		// 根据光流场生成像素映射表
+		Mat mapX(baseframe.size(), CV_32FC1); // X坐标映射表
+		Mat mapY(baseframe.size(), CV_32FC1); // Y坐标映射表
+		for (int y = 0; y < baseframe.rows; ++y)
+		{
+			for (int x = 0; x < baseframe.cols; ++x)
+			{
+				Point2f f = flow.at<Point2f>(y, x); // 光流位移
+				mapX.at<float>(y, x) = x + f.x;    // 映射到X坐标
+				mapY.at<float>(y, x) = y + f.y;    // 映射到Y坐标
+			}
+		}
 
-	//进入raw域
-	ob_process(raw, context, cfg);
-#if DEBUG_MODE
-	rgb_data = raw2rgb(raw, context, cfg);
-	save_rgb("1_ob.bmp", rgb_data, context, cfg);
-#endif
+		// 根据映射表对当前帧进行重映射（即配准）
+		remap(frames[i], warped, mapX, mapY, INTER_LINEAR); // 使用双线性插值
+		alignedframe.push_back(warped); // 保存配准结果
+	}
 
-	isp_gain_process(raw, context, cfg);
-#if DEBUG_MODE
-	rgb_data = raw2rgb(raw, context, cfg);
-	save_rgb("2_isp_gain.bmp", rgb_data, context, cfg);
-#endif
+	// 对齐后的所有帧进行像素融合，计算平均值生成冻结效果
+	Mat fused = Mat::zeros(frames[0].size(), CV_32FC3); // 初始化为全零图像（32位浮点）
 
-#if DEBUG_MODE
-	rgb_data = raw2rgb(raw, context, cfg);
-	save_rgb("3.0_pre_awb.bmp", rgb_data, context, cfg);
-#endif
-	awb_process(raw, context, cfg);
-#if DEBUG_MODE
-	rgb_data = raw2rgb(raw, context, cfg);
-	save_rgb("3.1_awb.bmp", rgb_data, context, cfg);
-#endif
+	for (const auto& img : alignedframe)
+	{
+		Mat temp;
+		img.convertTo(temp, CV_32FC3); // 转为32位浮点以便参与累加
+		fused += temp; // 累加像素值
+	}
 
-	ltm_process(raw, context, cfg);
-#if DEBUG_MODE
-	rgb_data = raw2rgb(raw, context, cfg);
-	save_rgb("4_ltm.bmp", rgb_data, context, cfg);
-#endif
-
-	rgb_data = demosaic_process(raw, context, cfg);
-#if DEBUG_MODE
-	save_rgb("5_demosaic.bmp", rgb_data, context, cfg);
-#endif
-	//进入RGB域
-
-	rgbgamma_process(rgb_data, context, cfg);
-#if DEBUG_MODE
-	save_rgb("10_rgbgamma.bmp", rgb_data, context, cfg);
-#endif
-
-
-	ccm_process(rgb_data, context, cfg);
-#if DEBUG_MODE
-	save_rgb("11_ccm.bmp", rgb_data, context, cfg);
-#endif
-
-
-	yuv_data = r2y_process(rgb_data, context, cfg);
-	//进入YUV域
-
-	ygamma_process(yuv_data, context, cfg);
-#if DEBUG_MODE
-	rgb_data = y2r_process(yuv_data, context, cfg); 
-	save_rgb("15_ygamma.bmp", rgb_data, context, cfg);
-#endif
-
-#if DEBUG_MODE
-	rgb_data = yyy2rgb_process(yuv_data, context, cfg);
-	save_rgb("19_pre_sharp.bmp", rgb_data, context, cfg);
-#endif
-
-	sharp_process(yuv_data, context, cfg);
-#if DEBUG_MODE
-	rgb_data = yyy2rgb_process(yuv_data, context, cfg);
-	save_rgb("20_sharp.bmp", rgb_data, context, cfg);
-#endif
-
-
-	rgb_data = y2r_process(yuv_data, context, cfg);
-	save_rgb("99_final.bmp", rgb_data, context, cfg);
-
-    // 释放内存
-    free(raw); 
-	free(rgb_data);
-	free(yuv_data);
-
-	time_print_prog_end = clock();
-	LOG("time = %.2f s.", ((float)time_print_prog_end - time_print_prog_start) / 1000);
-
-
-    return 0;
+	// 计算平均值，完成像素融合
+	fused /= static_cast<float>(alignedframe.size());
+	fused.convertTo(result, CV_8UC3); // 转回8位无符号整型，作为最终结果
 }
+
+int main()
+{
+	vector<Mat> images;
+
+	// 读取一系列图片，保存到矢量容器中
+	images.push_back(imread("data\\2.bmp"));
+	images.push_back(imread("data\\3.bmp"));
+	images.push_back(imread("data\\4.bmp"));
+	images.push_back(imread("data\\5.bmp"));
+	images.push_back(imread("data\\6.bmp"));
+	images.push_back(imread("data\\7.bmp"));
+	images.push_back(imread("data\\8.bmp"));
+	images.push_back(imread("data\\9.bmp"));
+	images.push_back(imread("data\\10.bmp"));
+	images.push_back(imread("data\\11.bmp"));
+	images.push_back(imread("data\\12.bmp"));
+	images.push_back(imread("data\\13.bmp"));
+	images.push_back(imread("data\\14.bmp"));
+	images.push_back(imread("data\\15.bmp"));
+	images.push_back(imread("data\\16.bmp"));
+	images.push_back(imread("data\\17.bmp"));
+	images.push_back(imread("data\\18.bmp"));
+
+	Mat result; // 用于存储冻结效果图
+	clock_t start = clock(); // 开始计时
+	freeze(images, result); // 调用冻结函数
+	clock_t end = clock(); // 结束计时
+	cout << "Time: " << (double)(end - start) << "ms" << endl; // 输出耗时
+
+	// 显示并保存结果
+	imshow("result", result); // 显示冻结效果图
+	imwrite("result.bmp", result); // 保存冻结效果图
+	waitKey(0); // 等待按键退出
+
+	return 0;
+}
+
 
 RGB* raw2rgb(U16* raw, IMG_CONTEXT context, G_CONFIG cfg) {
     // 获取图像的宽高和 Bayer Pattern
