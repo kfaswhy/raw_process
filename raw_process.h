@@ -21,11 +21,13 @@ typedef long long S64;
 typedef unsigned int U32;
 typedef int S32;
 typedef unsigned short U16;
+typedef short S16;
 typedef unsigned char U8;
 
 #define U16MAX (0xFFFF)
 #define U8MAX (255)
 #define U8MIN (0)
+#define M_PI 3.14159265358979323846
 
 #define calc_min(a,b) ((a)>(b)?(b):(a))
 #define calc_max(a,b) ((a)<(b)?(b):(a))
@@ -60,11 +62,12 @@ typedef struct _G_CONFIG
 	U8 ccm_on;
 	U8 rgbgamma_on;
 	U8 ygamma_on;
-	U8 sharp_on;
+	//U8 sharp_on;
 
 	U16 ob;
 	U16 isp_gain;
 	U16 r_gain;
+	U16 g_gain;
 	U16 b_gain;
 	
 	float ltm_strength; // 整体强度 (0~1, 1 表示完全应用 LTM)
@@ -75,6 +78,35 @@ typedef struct _G_CONFIG
 	float ccm[9];
 
 	U16 gamma[256];
+
+	int sharp_on;             // 锐化开关
+	// 全局控制
+	float global_strength = 1.0;  // 整体强度适中
+
+	// 区域分类
+	float flat_strength = 0.2;     // 平坦区弱锐化
+	float texture_strength = 0.7;  // 草地维持原强度
+	float edge_strength = 1.8;     // 树干边缘强化
+	float grad_flat_th = 3.0;      // 降低平坦区阈值
+	float grad_edge_th = 20.0;     // 提高边缘区阈值
+
+	// 方向增益
+	float dir_horizontal_strength = 0.9;  // 水平抑制
+	float dir_vertical_strength = 1.5;   // 垂直增强（树干）
+	float dir_diag1_strength = 0.9;      // 对角线1
+	float dir_diag2_strength = 0.9;       // 对角线2
+
+	// 颜色保护
+	float Rgain = 1.3;   // 红色区域增强（树皮）
+	float Ggain = 1.0;   // 绿色保持（草地）
+	float Bgain = 1.3;   // 蓝色增强（阴影树干）
+
+	// 亮度分段
+	U8 brightness_low_thresh = 30;
+	U8 brightness_high_thresh = 200;
+	float brightness_low_strength = 0.3;  // 暗部降噪
+	float brightness_mid_strength = 1.0;  // 中亮度正常
+	float brightness_high_strength = 1.0;  // 高亮度正常
 }G_CONFIG;
 
 
@@ -115,6 +147,8 @@ RGB* raw2rgb(U16* raw, IMG_CONTEXT context, G_CONFIG cfg);
 // 函数声明：读取 RAW 数据到一维数组
 
 U16* readraw(const char* filename, IMG_CONTEXT context, G_CONFIG cfg);
+
+RGB* yyy2rgb_process(YUV* yuv, IMG_CONTEXT context, G_CONFIG cfg);
 
 U8 save_rgb(const char* filename, RGB* rgb, IMG_CONTEXT context, G_CONFIG cfg);
 

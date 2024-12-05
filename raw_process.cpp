@@ -26,26 +26,27 @@ G_CONFIG cfg = { 0 };
 void load_cfg()
 {
 	cfg.bit = 16;
-	cfg.used_bit = 10;
+	cfg.used_bit = 12;
 	cfg.order = LITTLE_ENDIAN;
-	cfg.pattern = BGGR;
-	cfg.width = 1440;
-	cfg.height = 1048;
+	cfg.pattern = RGGB;
+	cfg.width = 2592;
+	cfg.height = 1536;
 	
 	cfg.ob_on = 1;
-	cfg.isp_gain_on = 1;
+	cfg.isp_gain_on = 0;
 	cfg.awb_on = 1;
 	cfg.ltm_on = 0;
-	cfg.ccm_on = 1;
-	cfg.rgbgamma_on = 1;
+	cfg.ccm_on = 0;
+	cfg.rgbgamma_on = 0;
 	cfg.ygamma_on = 0;
 	cfg.sharp_on = 1;
 
 	cfg.ob = 1024 ;
 	cfg.isp_gain = 1024;
 
-	cfg.r_gain = 1400;
-	cfg.b_gain = 2800;
+	cfg.r_gain = 1788;
+	cfg.g_gain = 1024;
+	cfg.b_gain = 2024;
 
 	cfg.ltm_strength = 0.2;
 	cfg.ltm_vblk = 4;
@@ -53,9 +54,9 @@ void load_cfg()
 	cfg.ltm_cst_thdr = 1;
 
 	float ccm_tmp[9] = {
-		0.9923,   0.0977, -0.1112,
-		-0.1590,   1.3558, -0.2169,
-		0.1667, -0.4535 ,  1.3281
+1.2,-0.1,-0.1,
+-0.5,2,-0.5,
+-0.25,-0.25,1.5
 
 	};
 
@@ -64,7 +65,34 @@ void load_cfg()
 		0,14,27,40,52,65,77,89,101,113,124,135,146,157,168,178,189,199,209,219,228,238,247,257,266,275,283,292,301,309,318,326,334,342,350,357,365,373,380,387,395,402,409,416,423,429,436,443,449,456,462,468,474,481,487,493,498,504,510,516,521,527,532,538,543,548,554,559,564,569,574,579,584,589,593,598,603,607,612,616,621,625,630,634,638,643,647,651,655,659,663,667,671,675,679,683,687,690,694,698,701,705,709,712,716,719,723,726,729,733,736,739,743,746,749,752,755,758,762,765,768,771,774,777,780,782,785,788,791,794,797,799,802,805,808,810,813,816,818,821,823,826,828,831,833,836,838,841,843,845,848,850,853,855,857,859,862,864,866,868,871,873,875,877,879,881,883,885,888,890,892,894,896,898,900,902,904,905,907,909,911,913,915,917,919,921,922,924,926,928,930,931,933,935,937,938,940,942,943,945,947,948,950,952,953,955,956,958,960,961,963,964,966,967,969,970,972,973,975,976,978,979,981,982,983,985,986,988,989,991,992,993,995,996,997,999,1000,1001,1003,1004,1005,1007,1008,1009,1010,1012,1013,1014,1015,1017,1018,1019,1020,1021,1023,1023
 	};
 
-	
+#if 1 //锐化参数
+	cfg.global_strength = 1.0;  // 整体强度适中
+
+	// 区域分类
+	cfg.flat_strength = 0.2;     // 平坦区弱锐化
+	cfg.texture_strength = 0.7;  // 草地维持原强度
+	cfg.edge_strength = 1.8;     // 树干边缘强化
+	cfg.grad_flat_th = 3.0;      // 降低平坦区阈值
+	cfg.grad_edge_th = 20.0;     // 提高边缘区阈值
+
+	// 方向增益
+	cfg.dir_horizontal_strength = 0.9;  // 水平抑制
+	cfg.dir_vertical_strength = 1.5;   // 垂直增强（树干）
+	cfg.dir_diag1_strength = 0.9;      // 对角线1
+	cfg.dir_diag2_strength = 0.9;       // 对角线2
+
+	// 颜色保护
+	cfg.Rgain = 1.3;   // 红色区域增强（树皮）
+	cfg.Ggain = 1.0;   // 绿色保持（草地）
+	cfg.Bgain = 1.3;   // 蓝色增强（阴影树干）
+
+	// 亮度分段
+	cfg.brightness_low_thresh = 30;
+	cfg.brightness_high_thresh = 200;
+	cfg.brightness_low_strength = 0.3;  // 暗部降噪
+	cfg.brightness_mid_strength = 1.0;  // 中亮度正常
+	cfg.brightness_high_strength = 1.0;  // 高亮度正常
+#endif
 	memcpy(cfg.ccm, ccm_tmp, 9 * sizeof(float));
 	memcpy(cfg.gamma, gamma_tmp, 256 * sizeof(U16));
 	return;
@@ -321,6 +349,30 @@ U16* readraw(const char* filename, IMG_CONTEXT context, G_CONFIG cfg)
     free(buffer);
     return raw;
 }
+
+RGB* yyy2rgb_process(YUV* yuv, IMG_CONTEXT context, G_CONFIG cfg)
+{
+	if (!yuv) {
+		std::cerr << "Invalid input parameters!" << std::endl;
+		return NULL; // 错误代码
+	}
+
+	RGB* rgb = (RGB*)calloc(context.height * context.width, sizeof(RGB));
+
+	RGB* tmp = rgb;
+	for (U32 i = 0; i < context.full_size; ++i) 
+	{
+		yuv[i].y = clp_range(0, yuv[i].y, 255);
+		tmp->r = yuv[i].y;
+		tmp->g = yuv[i].y;
+		tmp->b = yuv[i].y;
+		tmp++;
+	}
+	LOG("done.");
+
+	return rgb;
+}
+
 
 U8 save_rgb(const char* filename, RGB* rgb_data, IMG_CONTEXT context, G_CONFIG cfg) {
 	// 创建 OpenCV Mat 对象

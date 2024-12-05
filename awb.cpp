@@ -23,6 +23,10 @@ U8 awb_process(U16* raw, IMG_CONTEXT context, G_CONFIG cfg)
                 {
                     raw[y * width + x] = clp_range(0, ((U32)raw[y * width + x] * cfg.b_gain) >> 10, U16MAX);
                 }
+                else
+                {
+                    raw[y * width + x] = clp_range(0, ((U32)raw[y * width + x] * cfg.g_gain) >> 10, U16MAX);
+                }
                 break;
             case BGGR:
                 if ((y % 2 == 0) && (x % 2 == 0)) //B
@@ -32,6 +36,10 @@ U8 awb_process(U16* raw, IMG_CONTEXT context, G_CONFIG cfg)
                 else if ((y % 2 == 1) && (x % 2 == 1)) //R
                 {
                     raw[y * width + x] = clp_range(0, ((U32)raw[y * width + x] * cfg.r_gain) >> 10, U16MAX);
+                }
+                else 
+                {
+                    raw[y * width + x] = clp_range(0, ((U32)raw[y * width + x] * cfg.g_gain) >> 10, U16MAX);
                 }
                 break;
                 // Other patterns (GRBG, GBRG, BGGR) can be implemented similarly

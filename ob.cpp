@@ -1,6 +1,6 @@
 #include "ob.h"
 
-U8 ob_process1(U16* raw, IMG_CONTEXT context, G_CONFIG cfg)
+U8 ob_process(U16* raw, IMG_CONTEXT context, G_CONFIG cfg)
 {
     if (cfg.ob_on == 0)
     {
