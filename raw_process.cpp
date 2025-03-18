@@ -26,27 +26,27 @@ G_CONFIG cfg = { 0 };
 void load_cfg()
 {
 	cfg.bit = 16;
-	cfg.used_bit = 12;
+	cfg.used_bit = 10;
 	cfg.order = LITTLE_ENDIAN;
-	cfg.pattern = RGGB;
-	cfg.width = 2592;
-	cfg.height = 1536;
+	cfg.pattern = BGGR;
+	cfg.width = 1440;
+	cfg.height = 1080;
 	
 	cfg.ob_on = 1;
-	cfg.isp_gain_on = 0;
+	cfg.isp_gain_on = 1;
 	cfg.awb_on = 1;
 	cfg.ltm_on = 0;
-	cfg.ccm_on = 0;
-	cfg.rgbgamma_on = 0;
+	cfg.ccm_on = 1;
+	cfg.rgbgamma_on = 1;
 	cfg.ygamma_on = 0;
-	cfg.sharp_on = 1;
+	cfg.sharp_on = 0;
 
-	cfg.ob = 1024 ;
-	cfg.isp_gain = 1024;
+	cfg.ob = 1024;
+	cfg.isp_gain = 1024 * 1.35;
 
-	cfg.r_gain = 1788;
-	cfg.g_gain = 1024;
-	cfg.b_gain = 2024;
+	cfg.r_gain = 1024 * 1.09;
+	cfg.g_gain = 1024 * 1;
+	cfg.b_gain = 1024 * 1.64;
 
 	cfg.ltm_strength = 0.2;
 	cfg.ltm_vblk = 4;
@@ -54,9 +54,9 @@ void load_cfg()
 	cfg.ltm_cst_thdr = 1;
 
 	float ccm_tmp[9] = {
-1.2,-0.1,-0.1,
--0.5,2,-0.5,
--0.25,-0.25,1.5
+1.25, 0.1,-0.63,
+-0.2,1.47,-0.49,
+-0.2,-0.27,1.89
 
 	};
 
@@ -156,20 +156,21 @@ int main()
 
 	rgb_data = demosaic_process(raw, context, cfg);
 #if DEBUG_MODE
-	save_rgb("5_demosaic.bmp", rgb_data, context, cfg);
+	save_rgb("5_demosaic.jpg", rgb_data, context, cfg);
 #endif
 	//进入RGB域
 
-	rgbgamma_process(rgb_data, context, cfg);
-#if DEBUG_MODE
-	save_rgb("10_rgbgamma.bmp", rgb_data, context, cfg);
-#endif
-
-
 	ccm_process(rgb_data, context, cfg);
 #if DEBUG_MODE
-	save_rgb("11_ccm.bmp", rgb_data, context, cfg);
+	save_rgb("10_ccm.jpg", rgb_data, context, cfg);
 #endif
+
+	rgbgamma_process(rgb_data, context, cfg);
+#if DEBUG_MODE
+	save_rgb("11_rgbgamma.jpg", rgb_data, context, cfg);
+#endif
+
+
 
 
 	yuv_data = r2y_process(rgb_data, context, cfg);
@@ -178,18 +179,18 @@ int main()
 	ygamma_process(yuv_data, context, cfg);
 #if DEBUG_MODE
 	rgb_data = y2r_process(yuv_data, context, cfg); 
-	save_rgb("15_ygamma.bmp", rgb_data, context, cfg);
+	save_rgb("15_ygamma.jpg", rgb_data, context, cfg);
 #endif
 
 	sharp_process(yuv_data, context, cfg);
 #if DEBUG_MODE
 	rgb_data = y2r_process(yuv_data, context, cfg);
-	save_rgb("20_sharp.bmp", rgb_data, context, cfg);
+	save_rgb("20_sharp.jpg", rgb_data, context, cfg);
 #endif
 
 
 	rgb_data = y2r_process(yuv_data, context, cfg);
-	save_rgb("99_final.bmp", rgb_data, context, cfg);
+	save_rgb("99_final.jpg", rgb_data, context, cfg);
 
     // 释放内存
     free(raw); 
