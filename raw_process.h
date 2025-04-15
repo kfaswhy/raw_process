@@ -77,7 +77,8 @@ typedef struct _G_CONFIG
 
 	float ccm[9];
 
-	U16 gamma[256];
+	U32 gamma_x[49];
+	U32 gamma_y[49];
 
 	int sharp_on;             // 锐化开关
 	// 全局控制
@@ -159,4 +160,6 @@ void print_prog(U32 cur_pos, U32 tgt);
 RGB* load_bmp(const char* filename, IMG_CONTEXT* context);
 
 void save_bmp(const char* filename, RGB* img, IMG_CONTEXT* context);
+
+U32 calc_inter(U32 x0, U32* x, U32* y, U32 len);
 
