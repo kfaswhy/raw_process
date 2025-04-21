@@ -28,7 +28,9 @@ U8 ccm_process(RGB* rgb, IMG_CONTEXT context, G_CONFIG cfg)
     }
 
 
-
+    printf("\n%.2f, %.2f, %.2f,", cfg.ccm[0], cfg.ccm[1], cfg.ccm[2]);
+    printf("\n%.2f, %.2f, %.2f,", cfg.ccm[3], cfg.ccm[4], cfg.ccm[5]);
+    printf("\n%.2f, %.2f, %.2f\n", cfg.ccm[6], cfg.ccm[7], cfg.ccm[8]);
 
     LOG("done.");
 

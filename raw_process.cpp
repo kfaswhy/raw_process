@@ -33,7 +33,7 @@ void load_cfg()
 	cfg.height = 1080;
 	
 	cfg.ob_on = 1;
-	cfg.isp_gain_on = 0;
+	cfg.isp_gain_on = 1;
 	cfg.awb_on = 1;
 	cfg.ltm_on = 0;
 	cfg.ccm_on = 1;
@@ -42,11 +42,11 @@ void load_cfg()
 	cfg.sharp_on = 0;
 
 	cfg.ob = 1024;
-	cfg.isp_gain = 1024 * 2;
+	cfg.isp_gain = 1024 * 0.7317;
 
-	cfg.r_gain = 1024 * 2.4;
+	cfg.r_gain = 1024 * 1.2;
 	cfg.g_gain = 1024 * 1;
-	cfg.b_gain = 1024 * 1.43;
+	cfg.b_gain = 1024 * 1.64;
 
 	cfg.ltm_strength = 0.2;
 	cfg.ltm_vblk = 4;
@@ -54,9 +54,10 @@ void load_cfg()
 	cfg.ltm_cst_thdr = 1;
 
 	float ccm_tmp[9] = {
-1.18, 0, -0.17,
--0.21,1.25,-0.07,
-0,-0.24,1.24
+1.0974,   0.1312, - 0.2596,
+- 0.1341,   1.3858, - 0.3672,
+ 0.0367, - 0.5170,  1.6268
+
 
 
 	};
