@@ -13,7 +13,13 @@ U8 ob_process(U16* raw, IMG_CONTEXT context, G_CONFIG cfg)
         raw[i] = safe_sub(raw[i], cfg.ob);
         raw[i] = clp_range(0, (U32)raw[i] * ob_gain, U16MAX);
     }
-    LOG("done.");
+
+#if DEBUG_MODE
+    LOG("done."); 
+    RGB* rgb_data = raw2rgb(raw, context, cfg);
+    save_img_with_timestamp(rgb_data, &context, "_ob");
+#endif
+   
 
     return OK;
 }

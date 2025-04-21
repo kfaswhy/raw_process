@@ -1,4 +1,4 @@
-#include "ob.h"
+#include "awb.h"
 
 U8 awb_process(U16* raw, IMG_CONTEXT context, G_CONFIG cfg)
 {
@@ -6,6 +6,11 @@ U8 awb_process(U16* raw, IMG_CONTEXT context, G_CONFIG cfg)
     {
         return OK;
     }
+
+#if DEBUG_MODE
+    RGB* rgb_data = raw2rgb(raw, context, cfg);
+    save_img_with_timestamp(rgb_data, &context, "_pre_awb");
+#endif
 
     U16 height = context.height;
     U16 width = context.width;
@@ -48,7 +53,12 @@ U8 awb_process(U16* raw, IMG_CONTEXT context, G_CONFIG cfg)
             }
         }
     } 
+#if DEBUG_MODE
     LOG("done.");
+    rgb_data = raw2rgb(raw, context, cfg);
+    save_img_with_timestamp(rgb_data, &context, "_awb");
+#endif
+
 
 
     return OK;

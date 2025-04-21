@@ -15,8 +15,8 @@
 using namespace std;
 using namespace cv;
 
-
-U32 time_print_prog_start = clock();
+namespace fs = std::filesystem;
+U32 time_print_prog_start;
 U32 time_print_prog_end;
 U32 g_time_start;
 U32 g_time_end;
@@ -108,6 +108,7 @@ void load_cfg()
 
 int main() 
 {
+	clear_tmp();
 	load_cfg();
 	IMG_CONTEXT context = { 0 };
 	context.width = cfg.width;
@@ -127,89 +128,60 @@ int main()
 		return ERROR;
     }
 
-#if DEBUG_MODE
-	rgb_data = raw2rgb(raw, context, cfg);
-	//rgb_data = demosaic_process(raw, context, cfg);
-	save_rgb("0.bmp", rgb_data, context, cfg);
-#endif
-
+	time_print_prog_start = clock();
 	//进入raw域
 	ob_process(raw, context, cfg);
-#if DEBUG_MODE
-	rgb_data = raw2rgb(raw, context, cfg);
-	save_rgb("1_ob.bmp", rgb_data, context, cfg);
-#endif
-
 	isp_gain_process(raw, context, cfg);
-#if DEBUG_MODE
-	rgb_data = raw2rgb(raw, context, cfg);
-	save_rgb("2_isp_gain.bmp", rgb_data, context, cfg);
-#endif
-
-#if DEBUG_MODE
-	rgb_data = raw2rgb(raw, context, cfg);
-	save_rgb("3.0_pre_awb.bmp", rgb_data, context, cfg);
-#endif
 	awb_process(raw, context, cfg);
-#if DEBUG_MODE
-	rgb_data = raw2rgb(raw, context, cfg);
-	save_rgb("3.1_awb.bmp", rgb_data, context, cfg);
-#endif
-
 	ltm_process(raw, context, cfg);
-#if DEBUG_MODE
-	rgb_data = raw2rgb(raw, context, cfg);
-	save_rgb("4_ltm.bmp", rgb_data, context, cfg);
-#endif
-
 	rgb_data = demosaic_process(raw, context, cfg);
-#if DEBUG_MODE
-	save_rgb("5_demosaic.jpg", rgb_data, context, cfg);
-#endif
+
 	//进入RGB域
-
 	ccm_process(rgb_data, context, cfg);
-#if DEBUG_MODE
-	save_rgb("10_ccm.jpg", rgb_data, context, cfg);
-#endif
-
 	rgbgamma_process(rgb_data, context, cfg);
-#if DEBUG_MODE
-	save_rgb("11_rgbgamma.jpg", rgb_data, context, cfg);
-#endif
-
-
-
-
 	yuv_data = r2y_process(rgb_data, context, cfg);
+
 	//进入YUV域
-
 	ygamma_process(yuv_data, context, cfg);
-#if DEBUG_MODE
-	rgb_data = y2r_process(yuv_data, context, cfg); 
-	save_rgb("15_ygamma.jpg", rgb_data, context, cfg);
-#endif
-
 	sharp_process(yuv_data, context, cfg);
-#if DEBUG_MODE
+
+	//结束
 	rgb_data = y2r_process(yuv_data, context, cfg);
-	save_rgb("20_sharp.jpg", rgb_data, context, cfg);
-#endif
+	time_print_prog_end = clock();
+	LOG("time = %.2f s.", ((float)time_print_prog_end - time_print_prog_start) / 1000);
 
-
-	rgb_data = y2r_process(yuv_data, context, cfg);
-	save_rgb("99_final.jpg", rgb_data, context, cfg);
-
-    // 释放内存
+	//保存到本地
+	save_img_with_timestamp(rgb_data, &context, "_end");
     free(raw); 
 	free(rgb_data);
 	free(yuv_data);
 
-	time_print_prog_end = clock();
-	LOG("time = %.2f s.", ((float)time_print_prog_end - time_print_prog_start) / 1000);
-
-
     return 0;
+}
+
+
+
+void clear_tmp() {
+	std::string extensions[] = { ".jpg", ".png", ".bmp" };
+
+	for (const auto& entry : fs::directory_iterator(".")) {
+		if (fs::is_regular_file(entry.path())) { // Use fs::is_regular_file
+			std::string file_ext = entry.path().extension().string();
+
+			for (const auto& ext : extensions) {
+				if (file_ext == ext) {
+					try {
+						fs::remove(entry.path());
+						//std::cout << "删除文件: " << entry.path() << std::endl;
+					}
+					catch (const std::exception& e) {
+						std::cerr << "删除文件失败: " << entry.path() << " 错误: " << e.what() << std::endl;
+					}
+					break;
+				}
+			}
+		}
+	}
 }
 
 RGB* raw2rgb(U16* raw, IMG_CONTEXT context, G_CONFIG cfg) {
@@ -356,6 +328,12 @@ U16* readraw(const char* filename, IMG_CONTEXT context, G_CONFIG cfg)
     }
 
     free(buffer);
+
+#if DEBUG_MODE
+	RGB* rgb_data = raw2rgb(raw, context, cfg);
+	save_img_with_timestamp(rgb_data, &context, "_origin");
+#endif
+
     return raw;
 }
 
@@ -382,29 +360,6 @@ RGB* yyy2rgb_process(YUV* yuv, IMG_CONTEXT context, G_CONFIG cfg)
 	return rgb;
 }
 
-
-U8 save_rgb(const char* filename, RGB* rgb_data, IMG_CONTEXT context, G_CONFIG cfg) {
-	// 创建 OpenCV Mat 对象
-	int width = context.width;
-	int height = context.height;
-	cv::Mat img(height, width, CV_8UC3);
-
-	// 填充 Mat 数据
-	for (int y = 0; y < height; y++) {
-		for (int x = 0; x < width; x++) {
-			RGB pixel = rgb_data[y * width + x];
-			img.at<cv::Vec3b>(y, x) = cv::Vec3b(pixel.b, pixel.g, pixel.r);
-		}
-	}
-
-	// 保存到文件
-	if (cv::imwrite(filename, img)) {
-		return 1; // 保存成功
-	}
-	else {
-		return 0; // 保存失败
-	}
-}
 
 void safe_free(void* p)
 {
@@ -548,4 +503,50 @@ U32 calc_inter(U32 x0, U32* x, U32* y, U32 len)
 	}
 
 	return y0;
+}
+
+void save_img(const char* filename, RGB* img, IMG_CONTEXT* context, int compression_quality = 100)
+{
+	// 创建一个空的 OpenCV Mat 对象
+	cv::Mat mat_img(context->height, context->width, CV_8UC3);
+
+	// 填充 Mat 对象
+	for (int y = 0; y < context->height; y++) {
+		for (int x = 0; x < context->width; x++) {
+			RGB pixel = img[y * context->width + x];
+			mat_img.at<cv::Vec3b>(y, x) = cv::Vec3b(pixel.b, pixel.g, pixel.r);
+		}
+	}
+
+	// 设置图像保存参数，例如压缩质量
+	std::vector<int> params;
+	params.push_back(cv::IMWRITE_JPEG_QUALITY);  // 对 JPEG 格式指定压缩质量
+	params.push_back(compression_quality);
+
+	// 使用 OpenCV 保存图像，传递参数来设置压缩质量
+	bool success = cv::imwrite(filename, mat_img, params);
+
+	if (success) {
+		LOG("%s saved (Q=%d)", filename, compression_quality);
+	}
+	else {
+		LOG("Failed to save %s.", filename);
+	}
+}
+
+void save_img_with_timestamp(RGB* rgb_data, IMG_CONTEXT* context, const char* suffix) {
+	// 获取当前时间戳
+	SYSTEMTIME st;
+	GetSystemTime(&st);
+
+	// 格式化时间戳
+	char buffer[80];
+	snprintf(buffer, sizeof(buffer), "%02d%02d%02d%03d", st.wHour, st.wMinute, st.wSecond, st.wMilliseconds);
+
+	// 生成文件名
+	char filename[100];
+	snprintf(filename, sizeof(filename), "%s%s.jpg", buffer, suffix);
+
+	// 保存 BMP 文件
+	save_img(filename, rgb_data, context);
 }

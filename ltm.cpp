@@ -148,6 +148,10 @@ U8 ltm_process(U16* raw, IMG_CONTEXT context, G_CONFIG cfg)
         free(ltm_curves[i]);
     }
 
-    LOG("done.");
+   #if DEBUG_MODE
+    LOG("done."); 
+    RGB* rgb_data = raw2rgb(raw, context, cfg);
+    save_img_with_timestamp(rgb_data, &context, "_ltm");
+#endif
     return OK;
 }

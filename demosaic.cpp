@@ -156,7 +156,10 @@ RGB* demosaic_process(U16* raw, IMG_CONTEXT context, G_CONFIG cfg) {
         }
     }
 
-    LOG("done.");
     
+#if DEBUG_MODE
+    LOG("done.");
+    save_img_with_timestamp(rgb_data, &context, "_demosaic");
+#endif
     return rgb_data;
 }

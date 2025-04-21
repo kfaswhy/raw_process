@@ -2,7 +2,8 @@
 
 #define _CRT_SECURE_NO_WARNINGS
 
-#define DEBUG_MODE 1//需要调试时置1，否则置0
+//需要调试时置1，否则置0
+#define DEBUG_MODE 0
 
 #include <stdio.h>
 #include <iostream>
@@ -15,6 +16,12 @@
 #include <fstream>
 #include <vector>
 #include <string>
+
+#include <filesystem>
+//#include <experimental/filesystem>
+
+
+#define _SILENCE_EXPERIMENTAL_FILESYSTEM_DEPRECATION_WARNING
 
 typedef unsigned long long U64;
 typedef long long S64;
@@ -143,6 +150,8 @@ void load_cfg();
 
 int main();
 
+void clear_tmp();
+
 RGB* raw2rgb(U16* raw, IMG_CONTEXT context, G_CONFIG cfg);
 
 // 函数声明：读取 RAW 数据到一维数组
@@ -150,8 +159,6 @@ RGB* raw2rgb(U16* raw, IMG_CONTEXT context, G_CONFIG cfg);
 U16* readraw(const char* filename, IMG_CONTEXT context, G_CONFIG cfg);
 
 RGB* yyy2rgb_process(YUV* yuv, IMG_CONTEXT context, G_CONFIG cfg);
-
-U8 save_rgb(const char* filename, RGB* rgb, IMG_CONTEXT context, G_CONFIG cfg);
 
 void safe_free(void* p);
 
@@ -162,4 +169,8 @@ RGB* load_bmp(const char* filename, IMG_CONTEXT* context);
 void save_bmp(const char* filename, RGB* img, IMG_CONTEXT* context);
 
 U32 calc_inter(U32 x0, U32* x, U32* y, U32 len);
+
+void save_img(const char* filename, RGB* img, IMG_CONTEXT* context, int compression_quality);
+
+void save_img_with_timestamp(RGB* rgb_data, IMG_CONTEXT* context, const char* suffix);
 

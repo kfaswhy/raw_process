@@ -1,4 +1,5 @@
 #include "sharp.h"
+#include "y2r.h"
 U8 sharp_process(YUV* yuv, IMG_CONTEXT context, G_CONFIG cfg) {
     if (cfg.sharp_on == 0) {
         return OK;
@@ -97,6 +98,10 @@ U8 sharp_process(YUV* yuv, IMG_CONTEXT context, G_CONFIG cfg) {
         }
     }
 
+#if DEBUG_MODE
     LOG("done.");
+    RGB* rgb_data = y2r_process(yuv, context, cfg);
+    save_img_with_timestamp(rgb_data, &context, "_sharp");
+#endif
     return OK;
 }
