@@ -9,6 +9,7 @@
 #include "rgbgamma.h"
 #include "r2y.h"
 #include "ygamma.h"
+#include "yuv_txi.h"
 #include "sharp.h"
 #include "y2r.h"
 
@@ -31,18 +32,22 @@ void load_cfg()
 	cfg.pattern = BGGR;
 	cfg.width = 1440;
 	cfg.height = 1080;
+
+	cfg.rgb_bit = 16;
+	cfg.yuv_bit = 8;
 	
 	cfg.ob_on = 1;
-	cfg.isp_gain_on = 1;
+	cfg.isp_gain_on = 0;
 	cfg.awb_on = 1;
 	cfg.ltm_on = 0;
 	cfg.ccm_on = 1;
 	cfg.rgbgamma_on = 1;
 	cfg.ygamma_on = 0;
 	cfg.sharp_on = 0;
+	cfg.yuv_txi_on = 1;
 
 	cfg.ob = 1024;
-	cfg.isp_gain = 1024 * 0.7317;
+	cfg.isp_gain = 1024 * 0.75;
 
 	cfg.r_gain = 1024 * 1.2;
 	cfg.g_gain = 1024 * 1;
@@ -57,17 +62,14 @@ void load_cfg()
 1.0974,   0.1312, - 0.2596,
 - 0.1341,   1.3858, - 0.3672,
  0.0367, - 0.5170,  1.6268
-
-
-
 	};
 
-	U32 gamma_xtmp[49] =
+	U32 gamma_xtmp[GAMMA_LENGTH] =
 	{
 		0,1,2,3,4,5,6,7,8,10,12,14,16,20,24,28,32,40,48,56,64,80,96,112,128,160,192,224,256,320,384,448,512,640,768,896,1024,1280,1536,1792,2048,2304,2560,2816,3072,3328,3584,3840,4095
 	};
 
-	U32 gamma_ytmp[49] =
+	U32 gamma_ytmp[GAMMA_LENGTH] =
 	{
 		0,6,11,17,22,28,33,39,44,55,66,77,88,109,130,150,170,210,248,286,323,393,460,525,586,702,809,909,1002,1172,1323,1461,1587,1810,2003,2173,2325,2589,2812,3010,3191,3355,3499,3624,3736,3836,3927,4012,4095
 	};
@@ -101,8 +103,31 @@ void load_cfg()
 	cfg.brightness_high_strength = 1.0;  // 高亮度正常
 #endif
 	memcpy(cfg.ccm, ccm_tmp, 9 * sizeof(float));
-	memcpy(cfg.gamma_x, gamma_xtmp, 49 * sizeof(U32));
-	memcpy(cfg.gamma_y, gamma_ytmp, 49 * sizeof(U32));
+
+	if (cfg.rgb_bit > 12)
+	{
+		U8 shift = cfg.rgb_bit - 12;
+		for (int i = 0; i < GAMMA_LENGTH; i++)
+		{
+			cfg.gamma_x[i] = gamma_xtmp[i] << shift;
+			cfg.gamma_y[i] = gamma_ytmp[i] << shift;
+		}
+	}
+	else if (cfg.rgb_bit < 12)
+	{
+		U8 shift = 12 - cfg.rgb_bit;
+		for (int i = 0; i < GAMMA_LENGTH; i++)
+		{
+			cfg.gamma_x[i] = gamma_xtmp[i] >> shift;
+			cfg.gamma_y[i] = gamma_ytmp[i] >> shift;
+		}
+	}
+
+	//for (int i = 0; i < GAMMA_LENGTH; i++)
+	//{
+	//	printf("%u, ", cfg.gamma_x[i]);
+	//}
+
 	return;
 }
 
@@ -142,8 +167,10 @@ int main()
 	yuv_data = r2y_process(rgb_data, context, cfg);
 
 	//进入YUV域
-	ygamma_process(yuv_data, context, cfg);
-	sharp_process(yuv_data, context, cfg);
+
+	yuv_txi_process(yuv_data, context, cfg);
+	//ygamma_process(yuv_data, context, cfg);
+	//sharp_process(yuv_data, context, cfg);
 
 	//结束
 	rgb_data = y2r_process(yuv_data, context, cfg);
@@ -191,10 +218,9 @@ RGB* raw2rgb(U16* raw, IMG_CONTEXT context, G_CONFIG cfg) {
     BayerPattern pattern = (BayerPattern)cfg.pattern;
     ByteOrder order = (ByteOrder)cfg.order;
     const U8 bit_depth = cfg.bit;
-    const int bit_shift = cfg.bit - 8;
-
-    // 确定最大有效值
-    U16 max_val = (1 << bit_depth) - 1;
+	const int bit_shift = cfg.bit - cfg.rgb_bit;
+	const U16 max_rgb = (1 << cfg.rgb_bit) - 1;
+	const U16 max_val = (1 << bit_depth) - 1;
 
     // 确保原始数据按大小端顺序处理
     for (U32 i = 0; i < width * height; i++) {
@@ -225,28 +251,28 @@ RGB* raw2rgb(U16* raw, IMG_CONTEXT context, G_CONFIG cfg) {
                 if ((y % 2 == 0) && (x % 2 == 0)) //R
                 {
                     val = raw[y * width + x] >> bit_shift;
-                    pixel.r = clp_range(0, val, U8MAX);
+                    pixel.r = clp_range(0, val, max_rgb);
 					pixel.g = 0;
 					pixel.b = 0;
                 }
                 else if ((y % 2 == 0) && (x % 2 == 1)) //GR
                 {
                     val = raw[y * width + x] >> bit_shift;
-                    pixel.g = clp_range(0, val, U8MAX);
+                    pixel.g = clp_range(0, val, max_rgb);
                     pixel.r = 0;
                     pixel.b = 0;
                 }
                 else if ((y % 2 == 1) && (x % 2 == 0)) //GB
                 {
                     val = raw[y * width + x] >> bit_shift;
-                    pixel.g = clp_range(0, val, U8MAX);
+                    pixel.g = clp_range(0, val, max_rgb);
 					pixel.r = 0;
 					pixel.b = 0;
                 }
                 else //B
                 {
                     val = raw[y * width + x] >> bit_shift;
-                    pixel.b = clp_range(0, val, U8MAX);
+                    pixel.b = clp_range(0, val, max_rgb);
 					pixel.r = 0;
 					pixel.g = 0;
                 }
@@ -255,28 +281,28 @@ RGB* raw2rgb(U16* raw, IMG_CONTEXT context, G_CONFIG cfg) {
                 if ((y % 2 == 0) && (x % 2 == 0)) //B
                 {
 					val = raw[y * width + x] >> bit_shift;
-					pixel.b = clp_range(0, val, U8MAX);
+					pixel.b = clp_range(0, val, max_rgb);
 					pixel.r = 0;
 					pixel.g = 0;
                 }
                 else if ((y % 2 == 0) && (x % 2 == 1)) //GB
                 {
 					val = raw[y * width + x] >> bit_shift;
-					pixel.g = clp_range(0, val, U8MAX);
+					pixel.g = clp_range(0, val, max_rgb);
 					pixel.r = 0;
 					pixel.b = 0;
                 }
                 else if ((y % 2 == 1) && (x % 2 == 0)) //GR
                 {
 					val = raw[y * width + x] >> bit_shift;
-					pixel.g = clp_range(0, val, U8MAX);
+					pixel.g = clp_range(0, val, max_rgb);
 					pixel.r = 0;
 					pixel.b = 0;
                 }
                 else //R
                 {
 					val = raw[y * width + x] >> bit_shift;
-					pixel.r = clp_range(0, val, U8MAX);
+					pixel.r = clp_range(0, val, max_rgb);
 					pixel.g = 0;
 					pixel.b = 0;
                 }
@@ -479,13 +505,20 @@ U32 calc_inter(U32 x0, U32* x, U32* y, U32 len)
 	}
 
 	// 判断递增还是递减
-	int increasing = (x[1] > x[0]) ? 1 : 0;
+	int increasing = (x[len-1] > x[0]) ? 1 : 0;
 
 	// 寻找x0所在的区间
 	for (U32 i = 0; i < len - 1; i++) {
 		if ((increasing && x0 >= x[i] && x0 <= x[i + 1]) ||
 			(!increasing && x0 <= x[i] && x0 >= x[i + 1])) {
 			// 线性插值计算y0
+
+			if(x[i] == x[i + 1]) {
+				// 避免除以零
+				y0 = y[i];
+				return y0;
+			}
+
 			U32 x1 = x[i], x2 = x[i + 1];
 			U32 y1 = y[i], y2 = y[i + 1];
 
@@ -505,7 +538,45 @@ U32 calc_inter(U32 x0, U32* x, U32* y, U32 len)
 	return y0;
 }
 
-void save_img(const char* filename, RGB* img, IMG_CONTEXT* context, int compression_quality = 100)
+void save_y(const char* filename, U16* y, IMG_CONTEXT* context, G_CONFIG cfg, int compression_quality = 100)
+{
+	int height = context->height;
+	int width = context->width;
+	int total = width * height;
+
+	// 创建 OpenCV 灰度图像
+	cv::Mat gray_img(height, width, CV_8UC1);
+	U8* dst = gray_img.data;
+
+	// 判断是否需要归一化
+	if (cfg.yuv_bit == 8) {
+		for (int i = 0; i < total; ++i) {
+			dst[i] = static_cast<U8>(y[i]);
+		}
+	}
+	else {
+		int max_val = (1 << cfg.yuv_bit) - 1;
+		for (int i = 0; i < total; ++i) {
+			// 四舍五入归一化到 0~255
+			dst[i] = static_cast<U8>((y[i] * 255 + max_val / 2) / max_val);
+		}
+	}
+
+	// 设置保存参数
+	std::vector<int> compression_params;
+	if (strstr(filename, ".jpg") || strstr(filename, ".jpeg")) {
+		compression_params.push_back(cv::IMWRITE_JPEG_QUALITY);
+		compression_params.push_back(compression_quality); // 1 ~ 100
+	}
+
+	// 保存图像
+	if (!cv::imwrite(filename, gray_img, compression_params)) {
+		fprintf(stderr, "Failed to write image: %s\n", filename);
+	}
+}
+
+
+void save_img(const char* filename, RGB* img, IMG_CONTEXT* context, G_CONFIG cfg, int compression_quality = 100)
 {
 	// 创建一个空的 OpenCV Mat 对象
 	cv::Mat mat_img(context->height, context->width, CV_8UC3);
@@ -514,7 +585,18 @@ void save_img(const char* filename, RGB* img, IMG_CONTEXT* context, int compress
 	for (int y = 0; y < context->height; y++) {
 		for (int x = 0; x < context->width; x++) {
 			RGB pixel = img[y * context->width + x];
-			mat_img.at<cv::Vec3b>(y, x) = cv::Vec3b(pixel.b, pixel.g, pixel.r);
+
+			if (cfg.rgb_bit >= 8)
+			{
+				mat_img.at<cv::Vec3b>(y, x) =
+					cv::Vec3b(pixel.b >> (cfg.rgb_bit - 8), pixel.g >> (cfg.rgb_bit - 8), pixel.r >> (cfg.rgb_bit - 8));
+			}
+			else
+			{
+				mat_img.at<cv::Vec3b>(y, x) =
+					cv::Vec3b(pixel.b << (8 - cfg.rgb_bit), pixel.g << (8 - cfg.rgb_bit), pixel.r << (8 - cfg.rgb_bit));
+			}
+
 		}
 	}
 
@@ -548,5 +630,5 @@ void save_img_with_timestamp(RGB* rgb_data, IMG_CONTEXT* context, const char* su
 	snprintf(filename, sizeof(filename), "%s%s.jpg", buffer, suffix);
 
 	// 保存 BMP 文件
-	save_img(filename, rgb_data, context);
+	save_img(filename, rgb_data, context, cfg);
 }

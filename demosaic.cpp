@@ -7,19 +7,19 @@ RGB* demosaic_process(U16* raw, IMG_CONTEXT context, G_CONFIG cfg) {
     U16 height = context.height;
     BayerPattern pattern = (BayerPattern)cfg.pattern;
     ByteOrder order = (ByteOrder)cfg.order;
-    const U8 bit_depth = cfg.bit;
-    const int bit_shift = cfg.bit - 8;
+    const U8 raw_bit = cfg.bit;
+    const int bit_shift = cfg.bit - cfg.rgb_bit;
 
-    // 确定最大有效值
-    U16 max_val = (1 << bit_depth) - 1;
+    const U16 rgb_max = (1 << cfg.rgb_bit) - 1;
+    const U16 raw_max = (1 << raw_bit) - 1;
 
     // 确保原始数据按大小端顺序处理
     for (U32 i = 0; i < width * height; i++) {
         if (order == LITTLE_ENDIAN) {
-            raw[i] = raw[i] & max_val; // 提取低 bit_depth 位
+            raw[i] = raw[i] & raw_max; // 提取低 raw_bit 位
         }
         else if (order == BIG_ENDIAN) {
-            raw[i] = ((raw[i] & 0xFF) << 8 | (raw[i] >> 8)) & max_val;
+            raw[i] = ((raw[i] & 0xFF) << 8 | (raw[i] >> 8)) & raw_max;
         }
     }
 
@@ -48,100 +48,100 @@ RGB* demosaic_process(U16* raw, IMG_CONTEXT context, G_CONFIG cfg) {
                 if ((y % 2 == 0) && (x % 2 == 0)) //R
                 {
                     val = raw[y * width + x] >> bit_shift;
-                    pixel.r = clp_range(0, val, U8MAX);
+                    pixel.r = clp_range(0, val, rgb_max);
 
                     val = ((U32)raw[y * width + left] + raw[y * width + right] +
                         raw[top * width + x] + raw[bottom * width + x]) >> (2 + bit_shift);
-                    pixel.g = clp_range(0, val, U8MAX);
+                    pixel.g = clp_range(0, val, rgb_max);
 
                     val = ((U32)raw[top * width + left] + raw[top * width + right] +
                         raw[bottom * width + left] + raw[bottom * width + right]) >> (2 + bit_shift);
-                    pixel.b = clp_range(0, val, U8MAX);
+                    pixel.b = clp_range(0, val, rgb_max);
                 }
                 else if ((y % 2 == 0) && (x % 2 == 1)) //GR
                 {
                     val = raw[y * width + x] >> bit_shift;
-                    pixel.g = clp_range(0, val, U8MAX);
+                    pixel.g = clp_range(0, val, rgb_max);
 
                     val = ((U32)raw[y * width + left] + raw[y * width + right]) >> (1 + bit_shift);
-                    pixel.r = clp_range(0, val, U8MAX);
+                    pixel.r = clp_range(0, val, rgb_max);
 
                     val = ((U32)raw[top * width + x] + raw[bottom * width + x]) >> (1 + bit_shift);
-                    pixel.b = clp_range(0, val, U8MAX);
+                    pixel.b = clp_range(0, val, rgb_max);
                 }
                 else if ((y % 2 == 1) && (x % 2 == 0)) //GB
                 {
                     val = raw[y * width + x] >> bit_shift;
-                    pixel.g = clp_range(0, val, U8MAX);
+                    pixel.g = clp_range(0, val, rgb_max);
 
                     val = ((U32)raw[top * width + x] + raw[bottom * width + x]) >> (1 + bit_shift);
-                    pixel.r = clp_range(0, val, U8MAX);
+                    pixel.r = clp_range(0, val, rgb_max);
 
                     val = ((U32)raw[y * width + left] + raw[y * width + right]) >> (1 + bit_shift);
-                    pixel.b = clp_range(0, val, U8MAX); 
+                    pixel.b = clp_range(0, val, rgb_max);
                 }
                 else //B
                 {
                     val = raw[y * width + x] >> bit_shift;
-                    pixel.b = clp_range(0, val, U8MAX);
+                    pixel.b = clp_range(0, val, rgb_max);
 
                     val = ((U32)raw[y * width + left] + raw[y * width + right] +
                         raw[top * width + x] + raw[bottom * width + x]) >> (2 + bit_shift);
-                    pixel.g = clp_range(0, val, U8MAX);
+                    pixel.g = clp_range(0, val, rgb_max);
 
                     val = ((U32)raw[top * width + left] + raw[top * width + right] +
                         raw[bottom * width + left] + raw[bottom * width + right]) >> (2 + bit_shift);
-                    pixel.r = clp_range(0, val, U8MAX); 
+                    pixel.r = clp_range(0, val, rgb_max);
                 }
                 break;
             case BGGR:
                 if ((y % 2 == 0) && (x % 2 == 0)) //B
                 {
                     val = raw[y * width + x] >> bit_shift;
-                    pixel.b = clp_range(0, val, U8MAX);
+                    pixel.b = clp_range(0, val, rgb_max);
 
                     val = ((U32)raw[y * width + left] + raw[y * width + right] +
                         raw[top * width + x] + raw[bottom * width + x]) >> (2 + bit_shift);
-                    pixel.g = clp_range(0, val, U8MAX);
+                    pixel.g = clp_range(0, val, rgb_max);
 
                     val = ((U32)raw[top * width + left] + raw[top * width + right] +
                         raw[bottom * width + left] + raw[bottom * width + right]) >> (2 + bit_shift);
-                    pixel.r = clp_range(0, val, U8MAX);
+                    pixel.r = clp_range(0, val, rgb_max);
                 }
                 else if ((y % 2 == 0) && (x % 2 == 1)) //GB
                 {
                     val = raw[y * width + x] >> bit_shift;
-                    pixel.g = clp_range(0, val, U8MAX);
+                    pixel.g = clp_range(0, val, rgb_max);
 
                     val = ((U32)raw[top * width + x] + raw[bottom * width + x]) >> (1 + bit_shift);
-                    pixel.r = clp_range(0, val, U8MAX);
+                    pixel.r = clp_range(0, val, rgb_max);
 
                     val = ((U32)raw[y * width + left] + raw[y * width + right]) >> (1 + bit_shift);
-                    pixel.b = clp_range(0, val, U8MAX);
+                    pixel.b = clp_range(0, val, rgb_max);
                 }
                 else if ((y % 2 == 1) && (x % 2 == 0)) //GR
                 {
                     val = raw[y * width + x] >> bit_shift;
-                    pixel.g = clp_range(0, val, U8MAX);
+                    pixel.g = clp_range(0, val, rgb_max);
 
                     val = ((U32)raw[y * width + left] + raw[y * width + right]) >> (1 + bit_shift);
-                    pixel.r = clp_range(0, val, U8MAX);
+                    pixel.r = clp_range(0, val, rgb_max);
 
                     val = ((U32)raw[top * width + x] + raw[bottom * width + x]) >> (1 + bit_shift);
-                    pixel.b = clp_range(0, val, U8MAX); 
+                    pixel.b = clp_range(0, val, rgb_max);
                 }
                 else //R
                 {
                     val = raw[y * width + x] >> bit_shift;
-                    pixel.r = clp_range(0, val, U8MAX);
+                    pixel.r = clp_range(0, val, rgb_max);
 
                     val = ((U32)raw[y * width + left] + raw[y * width + right] +
                         raw[top * width + x] + raw[bottom * width + x]) >> (2 + bit_shift);
-                    pixel.g = clp_range(0, val, U8MAX);
+                    pixel.g = clp_range(0, val, rgb_max);
 
                     val = ((U32)raw[top * width + left] + raw[top * width + right] +
                         raw[bottom * width + left] + raw[bottom * width + right]) >> (2 + bit_shift);
-                    pixel.b = clp_range(0, val, U8MAX);
+                    pixel.b = clp_range(0, val, rgb_max);
                 }
                 break;
                 // Other patterns (GRBG, GBRG, BGGR) can be implemented similarly

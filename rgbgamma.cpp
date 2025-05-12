@@ -10,20 +10,21 @@ U8 rgbgamma_process(RGB* rgb, IMG_CONTEXT context, G_CONFIG cfg)
     U32 tmp_y = 0;
     RGB* p_rgb = &rgb[0];
 
+    const U16 max_rgb = (1 << cfg.rgb_bit) - 1;
+
 
     for (int i = 0; i < context.full_size; i++)
     {
-        tmp_x = (U32)p_rgb->r << 4;
-        tmp_y = calc_inter(tmp_x, cfg.gamma_x, cfg.gamma_y, 49);
-        p_rgb->r = clp_range(0, (tmp_y + 8) >> 4, U8MAX);
 
-        tmp_x = (U32)p_rgb->g << 4;
-        tmp_y = calc_inter(tmp_x, cfg.gamma_x, cfg.gamma_y, 49);
-        p_rgb->g = clp_range(0, (tmp_y + 8) >> 4, U8MAX);
 
-        tmp_x = (U32)p_rgb->b << 4;
-        tmp_y = calc_inter(tmp_x, cfg.gamma_x, cfg.gamma_y, 49);
-        p_rgb->b = clp_range(0, (tmp_y + 8) >> 4, U8MAX);
+        tmp_y = calc_inter((U32)p_rgb->r, cfg.gamma_x, cfg.gamma_y, GAMMA_LENGTH);
+        p_rgb->r = clp_range(0, tmp_y, max_rgb);
+
+        tmp_y = calc_inter((U32)p_rgb->g, cfg.gamma_x, cfg.gamma_y, GAMMA_LENGTH);
+        p_rgb->g = clp_range(0, tmp_y, max_rgb);
+
+        tmp_y = calc_inter((U32)p_rgb->b, cfg.gamma_x, cfg.gamma_y, GAMMA_LENGTH);
+        p_rgb->b = clp_range(0, tmp_y, max_rgb);
 
         p_rgb++;
     }

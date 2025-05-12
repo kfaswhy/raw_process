@@ -3,7 +3,7 @@
 #define _CRT_SECURE_NO_WARNINGS
 
 //需要调试时置1，否则置0
-#define DEBUG_MODE 0
+#define DEBUG_MODE 1
 
 #include <stdio.h>
 #include <iostream>
@@ -52,6 +52,9 @@ typedef unsigned char U8;
 typedef enum { RGGB = 0, GRBG = 1, GBRG = 2, BGGR = 3 } BayerPattern;  // Bayer 格式枚举类型
 typedef enum { LITTLE_ENDIAN, BIG_ENDIAN } ByteOrder;  // 字节顺序枚举类型
 
+#define GAMMA_LENGTH 49
+
+
 typedef struct _G_CONFIG
 {
 	U8 bit;
@@ -61,6 +64,8 @@ typedef struct _G_CONFIG
 	U16 width;
 	U16 height;
 
+	U8 rgb_bit;
+	U8 yuv_bit;
 
 	U8 ob_on;
 	U8 isp_gain_on;
@@ -69,6 +74,7 @@ typedef struct _G_CONFIG
 	U8 ccm_on;
 	U8 rgbgamma_on;
 	U8 ygamma_on;
+	U8 yuv_txi_on;
 	//U8 sharp_on;
 
 	U16 ob;
@@ -84,8 +90,8 @@ typedef struct _G_CONFIG
 
 	float ccm[9];
 
-	U32 gamma_x[49];
-	U32 gamma_y[49];
+	U32 gamma_x[GAMMA_LENGTH];
+	U32 gamma_y[GAMMA_LENGTH];
 
 	int sharp_on;             // 锐化开关
 	// 全局控制
@@ -105,9 +111,9 @@ typedef struct _G_CONFIG
 	float dir_diag2_strength = 0.9;       // 对角线2
 
 	// 颜色保护
-	float Rgain = 1.3;   // 红色区域增强（树皮）
-	float Ggain = 1.0;   // 绿色保持（草地）
-	float Bgain = 1.3;   // 蓝色增强（阴影树干）
+	float Rgain = 1.3;   
+	float Ggain = 1.0;   
+	float Bgain = 1.3;   
 
 	// 亮度分段
 	U8 brightness_low_thresh = 30;
@@ -120,16 +126,16 @@ typedef struct _G_CONFIG
 
 typedef struct _RGB
 {
-	U8 b;
-	U8 g;
-	U8 r;
+	U16 b;
+	U16 g;
+	U16 r;
 }RGB;
 
 typedef struct _YUV
 {
-	U8 y;
-	U8 u;
-	U8 v;
+	U16 y;
+	U16 u;
+	U16 v;
 } YUV;
 
 typedef struct _IMG_CONTEXT
@@ -170,7 +176,10 @@ void save_bmp(const char* filename, RGB* img, IMG_CONTEXT* context);
 
 U32 calc_inter(U32 x0, U32* x, U32* y, U32 len);
 
-void save_img(const char* filename, RGB* img, IMG_CONTEXT* context, int compression_quality);
+void save_y(const char* filename, U16* y, IMG_CONTEXT* context, G_CONFIG cfg, int compression_quality);
+
+void save_img(const char* filename, RGB* img, IMG_CONTEXT* context, G_CONFIG cfg, int compression_quality);
+
 
 void save_img_with_timestamp(RGB* rgb_data, IMG_CONTEXT* context, const char* suffix);
 
