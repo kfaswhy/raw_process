@@ -10,8 +10,8 @@ U8 ygamma_process(YUV* yuv, IMG_CONTEXT context, G_CONFIG cfg)
 
     for (int i = 0; i < context.full_size; i++)
     {
-        U32 tmp = cfg.gamma_y[yuv[i].y] >> 2;
-        yuv[i].y = clp_range(0, tmp, U8MAX);
+        U32 tmp = cfg.gamma_y[yuv->y[i]] >> 2;
+        yuv->y[i] = clp_range(0, tmp, U8MAX);
     }
 
 #if DEBUG_MODE

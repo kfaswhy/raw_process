@@ -27,31 +27,33 @@ G_CONFIG cfg = { 0 };
 void load_cfg()
 {
 	cfg.bit = 16;
-	cfg.used_bit = 10;
+	cfg.used_bit = 16;
 	cfg.order = LITTLE_ENDIAN;
 	cfg.pattern = BGGR;
-	cfg.width = 1440;
-	cfg.height = 1080;
+	cfg.width = 3840;
+	cfg.height = 2160;
 
 	cfg.rgb_bit = 16;
-	cfg.yuv_bit = 8;
+	cfg.yuv_bit = 16;
 	
 	cfg.ob_on = 1;
-	cfg.isp_gain_on = 0;
-	cfg.awb_on = 1;
-	cfg.ltm_on = 0;
+	cfg.isp_gain_on = 1;
+	cfg.awb_on = 0;
+	cfg.ltm_on = 1;
 	cfg.ccm_on = 1;
 	cfg.rgbgamma_on = 1;
-	cfg.ygamma_on = 0;
-	cfg.sharp_on = 0;
+	//cfg.ygamma_on = 0;
+	//cfg.sharp_on = 0;
 	cfg.yuv_txi_on = 1;
 
-	cfg.ob = 1024;
-	cfg.isp_gain = 1024 * 0.75;
+	//换算到16bit
+	cfg.ob = 200*16;
 
-	cfg.r_gain = 1024 * 1.2;
+	cfg.isp_gain = 1024*2;
+
+	cfg.r_gain = 1024 * 1;
 	cfg.g_gain = 1024 * 1;
-	cfg.b_gain = 1024 * 1.64;
+	cfg.b_gain = 1024 * 1;
 
 	cfg.ltm_strength = 0.2;
 	cfg.ltm_vblk = 4;
@@ -59,9 +61,14 @@ void load_cfg()
 	cfg.ltm_cst_thdr = 1;
 
 	float ccm_tmp[9] = {
-1.0974,   0.1312, - 0.2596,
-- 0.1341,   1.3858, - 0.3672,
- 0.0367, - 0.5170,  1.6268
+0.13, 1.52, -0.73,
+-0.06, -0.13, 1.42,
+-0.05, 0.03, 0.76
+
+
+
+
+
 	};
 
 	U32 gamma_xtmp[GAMMA_LENGTH] =
@@ -123,10 +130,6 @@ void load_cfg()
 		}
 	}
 
-	//for (int i = 0; i < GAMMA_LENGTH; i++)
-	//{
-	//	printf("%u, ", cfg.gamma_x[i]);
-	//}
 
 	return;
 }
@@ -159,6 +162,7 @@ int main()
 	isp_gain_process(raw, context, cfg);
 	awb_process(raw, context, cfg);
 	ltm_process(raw, context, cfg);
+
 	rgb_data = demosaic_process(raw, context, cfg);
 
 	//进入RGB域
@@ -167,7 +171,6 @@ int main()
 	yuv_data = r2y_process(rgb_data, context, cfg);
 
 	//进入YUV域
-
 	yuv_txi_process(yuv_data, context, cfg);
 	//ygamma_process(yuv_data, context, cfg);
 	//sharp_process(yuv_data, context, cfg);
@@ -375,10 +378,10 @@ RGB* yyy2rgb_process(YUV* yuv, IMG_CONTEXT context, G_CONFIG cfg)
 	RGB* tmp = rgb;
 	for (U32 i = 0; i < context.full_size; ++i) 
 	{
-		yuv[i].y = clp_range(0, yuv[i].y, 255);
-		tmp->r = yuv[i].y;
-		tmp->g = yuv[i].y;
-		tmp->b = yuv[i].y;
+		yuv->y[i] = clp_range(0, yuv->y[i], 255);
+		tmp->r = yuv->y[i];
+		tmp->g = yuv->y[i];
+		tmp->b = yuv->y[i];
 		tmp++;
 	}
 	LOG("done.");

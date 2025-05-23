@@ -1,10 +1,16 @@
 ﻿#include "r2y.h"
+#include "raw_process.h"
+#include "y2r.h"
 
 YUV* r2y_process(RGB* rgb, IMG_CONTEXT context, G_CONFIG cfg)
 {
-    YUV *yuv = (YUV*)calloc(context.height * context.width, sizeof(YUV));
+    YUV* yuv = (YUV*)malloc(sizeof(YUV));
 
     if (!yuv) return NULL;
+
+    yuv->y = (U16*)malloc(context.full_size * sizeof(U16));
+    yuv->u = (U16*)malloc(context.full_size * sizeof(U16));
+    yuv->v = (U16*)malloc(context.full_size * sizeof(U16));
 
     //const U16 max_rgb = (1 << cfg.rgb_bit) - 1;
     const U16 max_yuv = (1 << cfg.yuv_bit) - 1;
@@ -27,13 +33,15 @@ YUV* r2y_process(RGB* rgb, IMG_CONTEXT context, G_CONFIG cfg)
         float v_val = ((float)0.5 * r + -0.4187 * g + -0.0813* b) * pow(2.0, (cfg.yuv_bit - cfg.rgb_bit)) + pow(2.0, cfg.yuv_bit - 1);
 
         // 限制值在 [0, max_yuv] 范围
-        yuv[i].y = clp_range(0, y_val + 0.5, max_yuv);
-        yuv[i].u = clp_range(0, u_val + 0.5, max_yuv);
-        yuv[i].v = clp_range(0, v_val + 0.5, max_yuv);
+        yuv->y[i] = clp_range(0, y_val + 0.5, max_yuv);
+        yuv->u[i] = clp_range(0, u_val + 0.5, max_yuv);
+        yuv->v[i] = clp_range(0, v_val + 0.5, max_yuv);
 
     }
 #if DEBUG_MODE
     LOG("done.");
+    RGB* rgb_data = y2r_process(yuv, context, cfg);
+    save_img_with_timestamp(rgb_data, &context, "_r2y");
 #endif
     return yuv;
 }

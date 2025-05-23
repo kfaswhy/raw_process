@@ -133,9 +133,9 @@ typedef struct _RGB
 
 typedef struct _YUV
 {
-	U16 y;
-	U16 u;
-	U16 v;
+	U16 *y;
+	U16 *u;
+	U16 *v;
 } YUV;
 
 typedef struct _IMG_CONTEXT

@@ -12,9 +12,9 @@ RGB* y2r_process(YUV* yuv, IMG_CONTEXT context, G_CONFIG cfg)
 
     for (U32 i = 0; i < context.full_size; ++i) {
         // 根据 G_CONFIG::order 决定 U 和 V 的读取顺序
-        float y = (float)yuv[i].y;
-        float u = (float)yuv[i].u - pow(2.0, (cfg.yuv_bit - 1));
-        float v = (float)yuv[i].v - pow(2.0, (cfg.yuv_bit - 1));
+        float y = (float)yuv->y[i];
+        float u = (float)yuv->u[i] - pow(2.0, (cfg.yuv_bit - 1));
+        float v = (float)yuv->v[i] - pow(2.0, (cfg.yuv_bit - 1));
 
         float r = (y + 1.402 * v) * pow(2.0, (cfg.rgb_bit - cfg.yuv_bit));
         float g = (y - 0.3441 * u - 0.7141 * v) * pow(2.0, (cfg.rgb_bit - cfg.yuv_bit));
