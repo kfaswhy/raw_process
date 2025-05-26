@@ -27,18 +27,18 @@ G_CONFIG cfg = { 0 };
 void load_cfg()
 {
 	cfg.bit = 16;
-	cfg.used_bit = 16;
+	cfg.used_bit = 10;
 	cfg.order = LITTLE_ENDIAN;
 	cfg.pattern = BGGR;
-	cfg.width = 3840;
-	cfg.height = 2160;
+	cfg.width = 1440;
+	cfg.height = 1048;
 
 	cfg.rgb_bit = 16;
 	cfg.yuv_bit = 16;
 	
 	cfg.ob_on = 1;
-	cfg.isp_gain_on = 1;
-	cfg.awb_on = 0;
+	cfg.isp_gain_on = 0;
+	cfg.awb_on = 1;
 	cfg.ltm_on = 1;
 	cfg.ccm_on = 1;
 	cfg.rgbgamma_on = 1;
@@ -47,27 +47,20 @@ void load_cfg()
 	cfg.yuv_txi_on = 1;
 
 	//换算到16bit
-	cfg.ob = 200*16;
+	cfg.ob = 64*16;
 
 	cfg.isp_gain = 1024*2;
 
-	cfg.r_gain = 1024 * 1;
+	cfg.r_gain = 1024 * 2.17;
 	cfg.g_gain = 1024 * 1;
-	cfg.b_gain = 1024 * 1;
+	cfg.b_gain = 1024 * 1.14;
 
-	cfg.ltm_strength = 0.2;
-	cfg.ltm_vblk = 4;
-	cfg.ltm_hblk = 2;
-	cfg.ltm_cst_thdr = 1;
+
 
 	float ccm_tmp[9] = {
-0.13, 1.52, -0.73,
--0.06, -0.13, 1.42,
--0.05, 0.03, 0.76
-
-
-
-
+1.40, 0.42, -0.78,
+-0.44, 1.75, -0.69,
+-0.15, -0.05, 1.05
 
 	};
 
@@ -81,34 +74,6 @@ void load_cfg()
 		0,6,11,17,22,28,33,39,44,55,66,77,88,109,130,150,170,210,248,286,323,393,460,525,586,702,809,909,1002,1172,1323,1461,1587,1810,2003,2173,2325,2589,2812,3010,3191,3355,3499,3624,3736,3836,3927,4012,4095
 	};
 
-#if 1 //锐化参数
-	cfg.global_strength = 1.0;  // 整体强度适中
-
-	// 区域分类
-	cfg.flat_strength = 0.2;     // 平坦区弱锐化
-	cfg.texture_strength = 0.7;  // 草地维持原强度
-	cfg.edge_strength = 1.8;     // 树干边缘强化
-	cfg.grad_flat_th = 3.0;      // 降低平坦区阈值
-	cfg.grad_edge_th = 20.0;     // 提高边缘区阈值
-
-	// 方向增益
-	cfg.dir_horizontal_strength = 0.9;  // 水平抑制
-	cfg.dir_vertical_strength = 1.5;   // 垂直增强（树干）
-	cfg.dir_diag1_strength = 0.9;      // 对角线1
-	cfg.dir_diag2_strength = 0.9;       // 对角线2
-
-	// 颜色保护
-	cfg.Rgain = 1.3;   // 红色区域增强（树皮）
-	cfg.Ggain = 1.0;   // 绿色保持（草地）
-	cfg.Bgain = 1.3;   // 蓝色增强（阴影树干）
-
-	// 亮度分段
-	cfg.brightness_low_thresh = 30;
-	cfg.brightness_high_thresh = 200;
-	cfg.brightness_low_strength = 0.3;  // 暗部降噪
-	cfg.brightness_mid_strength = 1.0;  // 中亮度正常
-	cfg.brightness_high_strength = 1.0;  // 高亮度正常
-#endif
 	memcpy(cfg.ccm, ccm_tmp, 9 * sizeof(float));
 
 	if (cfg.rgb_bit > 12)
@@ -129,7 +94,6 @@ void load_cfg()
 			cfg.gamma_y[i] = gamma_ytmp[i] >> shift;
 		}
 	}
-
 
 	return;
 }
@@ -541,10 +505,8 @@ U32 calc_inter(U32 x0, U32* x, U32* y, U32 len)
 	return y0;
 }
 
-void save_y(const char* filename, U16* y, IMG_CONTEXT* context, G_CONFIG cfg, int compression_quality = 100)
+void save_y(const char* filename, U16* y, U16 width, U16 height, U8 bit, int compression_quality = 100)
 {
-	int height = context->height;
-	int width = context->width;
 	int total = width * height;
 
 	// 创建 OpenCV 灰度图像
@@ -552,13 +514,13 @@ void save_y(const char* filename, U16* y, IMG_CONTEXT* context, G_CONFIG cfg, in
 	U8* dst = gray_img.data;
 
 	// 判断是否需要归一化
-	if (cfg.yuv_bit == 8) {
+	if (bit == 8) {
 		for (int i = 0; i < total; ++i) {
 			dst[i] = static_cast<U8>(y[i]);
 		}
 	}
 	else {
-		int max_val = (1 << cfg.yuv_bit) - 1;
+		int max_val = (1 << bit) - 1;
 		for (int i = 0; i < total; ++i) {
 			// 四舍五入归一化到 0~255
 			dst[i] = static_cast<U8>((y[i] * 255 + max_val / 2) / max_val);
@@ -634,4 +596,107 @@ void save_img_with_timestamp(RGB* rgb_data, IMG_CONTEXT* context, const char* su
 
 	// 保存 BMP 文件
 	save_img(filename, rgb_data, context, cfg);
+}
+
+
+static float* gen_gauss_kernel(U8 r, float sigma)
+{
+	U8 size = 2 * r + 1;
+	float* kernel = (float*)malloc(size * size * sizeof(float));
+	float sum = 0.0f;
+	float s2 = 2 * sigma * sigma;
+	int index = 0;
+
+	for (int y = -r; y <= r; y++) {
+		for (int x = -r; x <= r; x++) {
+			float value = expf(-(x * x + y * y) / s2);
+			kernel[index++] = value;
+			sum += value;
+		}
+	}
+
+	for (int i = 0; i < size * size; i++) {
+		kernel[i] /= sum;
+	}
+
+	return kernel;
+}
+
+// 高斯滤波
+U16* gauss_filter(U16* y, U16 height, U16 width, U8 r)
+{
+	float sigma = r * 0.8f;
+	float* kernel = gen_gauss_kernel(r, sigma);
+	U16* out = (U16*)malloc(height * width * sizeof(U16));
+	memset(out, 0, height * width * sizeof(U16));
+	U8 size = 2 * r + 1;
+
+	for (U16 i = 0; i < height; i++) {
+		for (U16 j = 0; j < width; j++) {
+			float sum = 0.0f;
+			float wsum = 0.0f;
+
+			for (int dy = -r; dy <= r; dy++) {
+				for (int dx = -r; dx <= r; dx++) {
+					int y_idx = i + dy;
+					int x_idx = j + dx;
+					if (y_idx < 0 || y_idx >= height || x_idx < 0 || x_idx >= width)
+						continue;
+
+					float w = kernel[(dy + r) * size + (dx + r)];
+					sum += w * y[y_idx * width + x_idx];
+					wsum += w;
+				}
+			}
+
+			out[i * width + j] = (U16)(sum / wsum + 0.5f);
+		}
+	}
+
+	free(kernel);
+	return out;
+}
+
+
+
+static int compare_u16(const void* a, const void* b) {
+	U16 va = *(const U16*)a;
+	U16 vb = *(const U16*)b;
+	return (va > vb) - (va < vb);
+}
+
+U16* mid_filter(U16* y, U16 height, U16 width, U8 r) {
+	if (!y || height == 0 || width == 0) return NULL;
+
+	U16* output = (U16*)malloc(height * width * sizeof(U16));
+	if (!output) return NULL;
+
+	int window_size = (2 * r + 1) * (2 * r + 1);
+	U16* window = (U16*)malloc(window_size * sizeof(U16));
+	if (!window) {
+		free(output);
+		return NULL;
+	}
+
+	for (U16 row = 0; row < height; row++) {
+		for (U16 col = 0; col < width; col++) {
+			int count = 0;
+			// 采集邻域像素
+			for (int dy = -r; dy <= r; dy++) {
+				int ny = row + dy;
+				if (ny < 0 || ny >= height) continue;
+				for (int dx = -r; dx <= r; dx++) {
+					int nx = col + dx;
+					if (nx < 0 || nx >= width) continue;
+					window[count++] = y[ny * width + nx];
+				}
+			}
+			// 排序取中值
+			qsort(window, count, sizeof(U16), compare_u16);
+			output[row * width + col] = window[count / 2];
+		}
+	}
+
+	free(window);
+	return output;
 }

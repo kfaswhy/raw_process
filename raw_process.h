@@ -75,52 +75,25 @@ typedef struct _G_CONFIG
 	U8 rgbgamma_on;
 	U8 ygamma_on;
 	U8 yuv_txi_on;
-	//U8 sharp_on;
+	U8 sharp_on;
 
+	//ob
 	U16 ob;
+
+	//isp_gain
 	U16 isp_gain;
+
+	//awb
 	U16 r_gain;
 	U16 g_gain;
 	U16 b_gain;
 	
-	float ltm_strength; // 整体强度 (0~1, 1 表示完全应用 LTM)
-	U8 ltm_vblk;    //纵向分块数
-	U8 ltm_hblk;    //纵向分块数
-	float ltm_cst_thdr;
-
+	//ccm
 	float ccm[9];
 
+	//gamma
 	U32 gamma_x[GAMMA_LENGTH];
 	U32 gamma_y[GAMMA_LENGTH];
-
-	int sharp_on;             // 锐化开关
-	// 全局控制
-	float global_strength = 1.0;  // 整体强度适中
-
-	// 区域分类
-	float flat_strength = 0.2;     // 平坦区弱锐化
-	float texture_strength = 0.7;  // 草地维持原强度
-	float edge_strength = 1.8;     // 树干边缘强化
-	float grad_flat_th = 3.0;      // 降低平坦区阈值
-	float grad_edge_th = 20.0;     // 提高边缘区阈值
-
-	// 方向增益
-	float dir_horizontal_strength = 0.9;  // 水平抑制
-	float dir_vertical_strength = 1.5;   // 垂直增强（树干）
-	float dir_diag1_strength = 0.9;      // 对角线1
-	float dir_diag2_strength = 0.9;       // 对角线2
-
-	// 颜色保护
-	float Rgain = 1.3;   
-	float Ggain = 1.0;   
-	float Bgain = 1.3;   
-
-	// 亮度分段
-	U8 brightness_low_thresh = 30;
-	U8 brightness_high_thresh = 200;
-	float brightness_low_strength = 0.3;  // 暗部降噪
-	float brightness_mid_strength = 1.0;  // 中亮度正常
-	float brightness_high_strength = 1.0;  // 高亮度正常
 }G_CONFIG;
 
 
@@ -176,10 +149,18 @@ void save_bmp(const char* filename, RGB* img, IMG_CONTEXT* context);
 
 U32 calc_inter(U32 x0, U32* x, U32* y, U32 len);
 
-void save_y(const char* filename, U16* y, IMG_CONTEXT* context, G_CONFIG cfg, int compression_quality);
+void save_y(const char* filename, U16* y, U16 width, U16 height, U8 bit, int compression_quality);
+
 
 void save_img(const char* filename, RGB* img, IMG_CONTEXT* context, G_CONFIG cfg, int compression_quality);
 
 
 void save_img_with_timestamp(RGB* rgb_data, IMG_CONTEXT* context, const char* suffix);
 
+U16* gauss_filter(U16* y, U16 height, U16 width, U8 r);
+
+static float* gen_gauss_kernel(U8 r, float sigma);
+
+static int compare_u16(const void* a, const void* b);
+
+U16* mid_filter(U16* y, U16 height, U16 width, U8 r);
