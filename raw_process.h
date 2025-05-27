@@ -1,8 +1,9 @@
-#pragma once
+#ifndef RAW_PROCESS_H
+#define RAW_PROCESS_H
 
 #define _CRT_SECURE_NO_WARNINGS
 #define _SILENCE_EXPERIMENTAL_FILESYSTEM_DEPRECATION_WARNING
-
+#define _CRT_NONSTDC_NO_DEPRECATE
 
 //需要调试时置1，否则置0
 #define DEBUG_MODE 1
@@ -18,7 +19,8 @@
 #include <fstream>
 #include <vector>
 #include <string>
-
+#include <ctype.h>
+#include <stdlib.h>
 #include <filesystem>
 //#include <experimental/filesystem>
 
@@ -47,14 +49,20 @@ typedef unsigned char U8;
 #define OK 0
 #define ERROR -1
 
+
+#define GAMMA_LENGTH 49
+#define GAIN_FACTOR 1024
+
 #define LOG(...) {printf("%s [%d]: ", __FUNCTION__, __LINE__); printf(__VA_ARGS__); printf("\n"); }
 
 
 typedef enum { RGGB = 0, GRBG = 1, GBRG = 2, BGGR = 3 } BayerPattern;  // Bayer 格式枚举类型
 typedef enum { LITTLE_ENDIAN, BIG_ENDIAN } ByteOrder;  // 字节顺序枚举类型
 
-#define GAMMA_LENGTH 49
-#define GAIN_FACTOR 1024
+
+
+
+
 
 
 typedef struct _G_CONFIG
@@ -138,7 +146,6 @@ typedef struct _IMG_CONTEXT
 }IMG_CONTEXT;
 
 
-void load_cfg();
 
 int main();
 
@@ -177,3 +184,6 @@ static float* gen_gauss_kernel(U8 r, float sigma);
 static int compare_u16(const void* a, const void* b);
 
 U16* mid_filter(U16* y, U16 height, U16 width, U8 r);
+
+
+#endif //RAW_PROCESS_H
