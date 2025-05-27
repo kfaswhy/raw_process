@@ -145,6 +145,7 @@
   <ItemGroup>
     <ClCompile Include="awb.cpp" />
     <ClCompile Include="ccm.cpp" />
+    <ClCompile Include="cnr.cpp" />
     <ClCompile Include="demosaic.cpp" />
     <ClCompile Include="isp_gain.cpp" />
     <ClCompile Include="load_ini.cpp" />
@@ -157,11 +158,13 @@
     <ClCompile Include="sharp.cpp" />
     <ClCompile Include="y2r.cpp" />
     <ClCompile Include="ygamma.cpp" />
+    <ClCompile Include="ynr.cpp" />
     <ClCompile Include="yuv_txi.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="awb.h" />
     <ClInclude Include="ccm.h" />
+    <ClInclude Include="cnr.h" />
     <ClInclude Include="demosaic.h" />
     <ClInclude Include="isp_gain.h" />
     <ClInclude Include="load_ini.h" />
@@ -174,6 +177,7 @@
     <ClInclude Include="sharp.h" />
     <ClInclude Include="y2r.h" />
     <ClInclude Include="ygamma.h" />
+    <ClInclude Include="ynr.h" />
     <ClInclude Include="yuv_txi.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

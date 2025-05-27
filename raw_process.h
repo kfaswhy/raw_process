@@ -60,11 +60,6 @@ typedef enum { RGGB = 0, GRBG = 1, GBRG = 2, BGGR = 3 } BayerPattern;  // Bayer 
 typedef enum { LITTLE_ENDIAN, BIG_ENDIAN } ByteOrder;  // 字节顺序枚举类型
 
 
-
-
-
-
-
 typedef struct _G_CONFIG
 {
 	U8 bit;
@@ -85,6 +80,8 @@ typedef struct _G_CONFIG
 	U8 ccm_on;
 	U8 rgbgamma_on;
 	U8 ygamma_on;
+	U8 ynr_on;
+	U8 cnr_on;
 	U8 yuv_txi_on;
 	U8 sharp_on;
 
@@ -115,6 +112,18 @@ typedef struct _G_CONFIG
 	//gamma
 	U32 gamma_x[GAMMA_LENGTH];
 	U32 gamma_y[GAMMA_LENGTH];
+
+	//ynr
+	U8 ynr_r;
+
+	//cnr
+	U8 cnr_r;
+
+	//txi
+	U8 txi_r_detail;
+	U8 txi_r_bifilter;
+	float txi_str;
+
 }G_CONFIG;
 
 

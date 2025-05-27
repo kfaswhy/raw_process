@@ -25,6 +25,8 @@ void load_cfg(G_CONFIG* cfg)
     cfg->rgbgamma_on = 1;
     //cfg->ygamma_on = 0;
     //cfg->sharp_on = 0;
+    cfg->ynr_on = 1;
+    cfg->cnr_on = 1;
     cfg->yuv_txi_on = 1;
 
     //12->16bit
@@ -138,6 +140,12 @@ void load_cfg(G_CONFIG* cfg)
         0,6,11,17,22,28,33,39,44,55,66,77,88,109,130,150,170,210,248,286,323,393,460,525,586,702,809,909,1002,1172,1323,1461,1587,1810,2003,2173,2325,2589,2812,3010,3191,3355,3499,3624,3736,3836,3927,4012,4095
     };
 
+    cfg->ynr_r = 1;
+    cfg->cnr_r = 3;
+
+    cfg->txi_r_detail = 1;
+    cfg->txi_r_bifilter = 1;
+    cfg->txi_str = 15;
 
     //以下后处理
     U16 lsc_blk = cfg->lsc_wblock * cfg->lsc_hblock;

@@ -12,10 +12,10 @@ U8 yuv_txi_process(YUV* yuv, IMG_CONTEXT context, G_CONFIG cfg)
         return OK;
     }
 
-    U8 r_detail = 1;
-    U8 r_bifilter = 1;
-    float y_thd_bifilter = 16 / 255;
-    float str_enh = 10;
+    U8 r_detail = cfg.txi_r_detail;
+    U8 r_bifilter = cfg.txi_r_bifilter;
+    //float y_thd_bifilter = 16 / 255;
+    float str_enh = cfg.txi_str;
 
 
     U16 y_max = (1 << cfg.yuv_bit) - 1;

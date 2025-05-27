@@ -9,9 +9,11 @@
 #include "ccm.h"
 #include "rgbgamma.h"
 #include "r2y.h"
-#include "ygamma.h"
+//#include "ygamma.h" 
+#include "ynr.h"
+#include "cnr.h"
 #include "yuv_txi.h"
-#include "sharp.h"
+//#include "sharp.h"
 #include "y2r.h"
 
 #include "load_ini.h"
@@ -67,7 +69,10 @@ int main()
 	yuv_data = r2y_process(rgb_data, context, cfg);
 
 	//进入YUV域
+	ynr_process(yuv_data, context, cfg);
+	cnr_process(yuv_data, context, cfg);
 	yuv_txi_process(yuv_data, context, cfg);
+	
 
 
 	//结束

@@ -2,6 +2,7 @@
 
 #include "raw_process.h"
 
+
 void load_cfg(G_CONFIG* cfg);
 
 void load_cfg_from_ini(const char* filename, G_CONFIG* cfg);
