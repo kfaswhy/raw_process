@@ -147,6 +147,7 @@
     <ClCompile Include="ccm.cpp" />
     <ClCompile Include="demosaic.cpp" />
     <ClCompile Include="isp_gain.cpp" />
+    <ClCompile Include="lsc.cpp" />
     <ClCompile Include="ltm.cpp" />
     <ClCompile Include="ob.cpp" />
     <ClCompile Include="r2y.cpp" />
@@ -162,6 +163,7 @@
     <ClInclude Include="ccm.h" />
     <ClInclude Include="demosaic.h" />
     <ClInclude Include="isp_gain.h" />
+    <ClInclude Include="lsc.h" />
     <ClInclude Include="ltm.h" />
     <ClInclude Include="ob.h" />
     <ClInclude Include="r2y.h" />

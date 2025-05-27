@@ -1,6 +1,8 @@
 #pragma once
 
 #define _CRT_SECURE_NO_WARNINGS
+#define _SILENCE_EXPERIMENTAL_FILESYSTEM_DEPRECATION_WARNING
+
 
 //需要调试时置1，否则置0
 #define DEBUG_MODE 1
@@ -21,7 +23,6 @@
 //#include <experimental/filesystem>
 
 
-#define _SILENCE_EXPERIMENTAL_FILESYSTEM_DEPRECATION_WARNING
 
 typedef unsigned long long U64;
 typedef long long S64;
@@ -53,6 +54,8 @@ typedef enum { RGGB = 0, GRBG = 1, GBRG = 2, BGGR = 3 } BayerPattern;  // Bayer 
 typedef enum { LITTLE_ENDIAN, BIG_ENDIAN } ByteOrder;  // 字节顺序枚举类型
 
 #define GAMMA_LENGTH 49
+#define GAIN_FACTOR 1024
+
 
 
 typedef struct _G_CONFIG
@@ -68,6 +71,7 @@ typedef struct _G_CONFIG
 	U8 yuv_bit;
 
 	U8 ob_on;
+	U8 lsc_on;
 	U8 isp_gain_on;
 	U8 awb_on;
 	U8 ltm_on;

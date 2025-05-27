@@ -1,6 +1,7 @@
 ﻿#include "raw_process.h"
 
 #include "ob.h"
+#include "lsc.h"
 #include "isp_gain.h"
 #include "awb.h"
 #include "ltm.h"
@@ -37,6 +38,7 @@ void load_cfg()
 	cfg.yuv_bit = 16;
 	
 	cfg.ob_on = 1;
+	cfg.lsc_on = 1;
 	cfg.isp_gain_on = 0;
 	cfg.awb_on = 1;
 	cfg.ltm_on = 1;
@@ -58,9 +60,10 @@ void load_cfg()
 
 
 	float ccm_tmp[9] = {
-1.40, 0.42, -0.78,
--0.44, 1.75, -0.69,
--0.15, -0.05, 1.05
+1.24, -0.01, -0.24,
+-0.19, 1.27, -0.13,
+-0.06, -0.26, 1.37
+
 
 	};
 
@@ -123,6 +126,7 @@ int main()
 	time_print_prog_start = clock();
 	//进入raw域
 	ob_process(raw, context, cfg);
+	lsc_process(raw, context, cfg);
 	isp_gain_process(raw, context, cfg);
 	awb_process(raw, context, cfg);
 	ltm_process(raw, context, cfg);
