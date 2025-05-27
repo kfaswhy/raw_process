@@ -57,7 +57,6 @@ typedef enum { LITTLE_ENDIAN, BIG_ENDIAN } ByteOrder;  // 字节顺序枚举类型
 #define GAIN_FACTOR 1024
 
 
-
 typedef struct _G_CONFIG
 {
 	U8 bit;
@@ -83,6 +82,16 @@ typedef struct _G_CONFIG
 
 	//ob
 	U16 ob;
+
+	//shading
+	U8 lsc_type; 	/* 使用flat shading还是interpolation shading，1为flat，0为插值 */
+	U8 lsc_wblock;
+	U8 lsc_hblock;
+	U16* lsc_rgain;
+	U16* lsc_grgain;
+	U16* lsc_gbgain;
+	U16* lsc_bgain;
+
 
 	//isp_gain
 	U16 isp_gain;

@@ -9,25 +9,14 @@ U8 lsc_process(U16* raw, IMG_CONTEXT context, G_CONFIG cfg)
 
 
     //参数区
-    U8 shading_type = 0; 	/* 使用flat shading还是interpolation shading，1为flat，0为插值 */
-    U8 wblock = 2;
-    U8 hblock = 2;
+    U8 lsc_type = cfg.lsc_type; 	/* 使用flat shading还是interpolation shading，1为flat，0为插值 */
+    U8 wblock = cfg.lsc_wblock;
+    U8 hblock = cfg.lsc_hblock;
 
-    U16* rgain = (U16*)malloc(sizeof(U16) * wblock * hblock);
-    U16* grgain = (U16*)malloc(sizeof(U16) * wblock * hblock);
-    U16* gbgain = (U16*)malloc(sizeof(U16) * wblock * hblock);
-    U16* bgain = (U16*)malloc(sizeof(U16) * wblock * hblock);
-
-    
-    U16 tmpr[] = {2048, 1024, 1024, 1024};
-    U16 tmpgr[] = {1024, 2048, 1024, 1024};
-    U16 tmpgb[] = {1024, 1024, 2048, 1024};
-    U16 tmpb[] = {1024, 1024, 1024, 2048 };
-    
-    memcpy(rgain, tmpr, sizeof(U16) * wblock * hblock);
-    memcpy(grgain, tmpgr, sizeof(U16) * wblock * hblock);
-    memcpy(gbgain, tmpgb, sizeof(U16) * wblock * hblock);
-    memcpy(bgain, tmpb, sizeof(U16) * wblock * hblock);
+    U16* rgain = cfg.lsc_rgain;
+    U16* grgain = cfg.lsc_grgain;
+    U16* gbgain = cfg.lsc_gbgain;
+    U16* bgain = cfg.lsc_bgain;
 
 
     S32 i = 0;
@@ -47,7 +36,7 @@ U8 lsc_process(U16* raw, IMG_CONTEXT context, G_CONFIG cfg)
 
     if (cfg.pattern == BGGR)
     {
-        if (shading_type == 1)/* flat无插值 */
+        if (lsc_type == 1)/* flat无插值 */
         {
             /* 此处使用double型，下方h_pos = i * H_CELL_NUM / height */
             /* 由于i的范围为[0, height - 1]，所以 i / height < 1，所以h_pos < H_CELL_NUM，不会溢出 */
@@ -85,7 +74,7 @@ U8 lsc_process(U16* raw, IMG_CONTEXT context, G_CONFIG cfg)
                 }
             }
         }
-        else if (shading_type == 0)/* 插值 */
+        else if (lsc_type == 0)/* 插值 */
         {
             w_cell = (double)(width) / (double)(wblock - 1);
             h_cell = (double)(height) / (double)(hblock - 1);
@@ -144,7 +133,7 @@ U8 lsc_process(U16* raw, IMG_CONTEXT context, G_CONFIG cfg)
 
     if (cfg.pattern == RGGB)
     {
-        if (shading_type == 1)/* flat无插值 */
+        if (lsc_type == 1)/* flat无插值 */
         {
             /* 此处使用double型，下方h_pos = i * H_CELL_NUM / height */
             /* 由于i的范围为[0, height - 1]，所以 i / height < 1，所以h_pos < H_CELL_NUM，不会溢出 */
@@ -182,7 +171,7 @@ U8 lsc_process(U16* raw, IMG_CONTEXT context, G_CONFIG cfg)
                 }
             }
         }
-        else if (shading_type == 0)/* 插值 */
+        else if (lsc_type == 0)/* 插值 */
         {
             w_cell = (double)(width) / (double)(wblock - 1);
             h_cell = (double)(height) / (double)(hblock - 1);
@@ -241,7 +230,7 @@ U8 lsc_process(U16* raw, IMG_CONTEXT context, G_CONFIG cfg)
 
     if (cfg.pattern == GRBG)
     {
-        if (shading_type == 1)/* flat无插值 */
+        if (lsc_type == 1)/* flat无插值 */
         {
             /* 此处使用double型，下方h_pos = i * H_CELL_NUM / height */
             /* 由于i的范围为[0, height - 1]，所以 i / height < 1，所以h_pos < H_CELL_NUM，不会溢出 */
@@ -279,7 +268,7 @@ U8 lsc_process(U16* raw, IMG_CONTEXT context, G_CONFIG cfg)
                 }
             }
         }
-        else if (shading_type == 0)/* 插值 */
+        else if (lsc_type == 0)/* 插值 */
         {
             w_cell = (double)(width) / (double)(wblock - 1);
             h_cell = (double)(height) / (double)(hblock - 1);
@@ -338,7 +327,7 @@ U8 lsc_process(U16* raw, IMG_CONTEXT context, G_CONFIG cfg)
 
     if (cfg.pattern == GBRG)
     {
-        if (shading_type == 1)/* flat无插值 */
+        if (lsc_type == 1)/* flat无插值 */
         {
             /* 此处使用double型，下方h_pos = i * H_CELL_NUM / height */
             /* 由于i的范围为[0, height - 1]，所以 i / height < 1，所以h_pos < H_CELL_NUM，不会溢出 */
@@ -376,7 +365,7 @@ U8 lsc_process(U16* raw, IMG_CONTEXT context, G_CONFIG cfg)
                 }
             }
         }
-        else if (shading_type == 0)/* 插值 */
+        else if (lsc_type == 0)/* 插值 */
         {
             w_cell = (double)(width) / (double)(wblock - 1);
             h_cell = (double)(height) / (double)(hblock - 1);
