@@ -14,9 +14,9 @@ U8 cnr_process(YUV* yuv, IMG_CONTEXT context, G_CONFIG cfg)
 
 
     U16* u_mid = mid_filter(u, context.height, context.width, cfg.cnr_r);
-    u_mid = gauss_filter(u_mid, context.height, context.width, cfg.cnr_r);
+    //u_mid = gauss_filter(u_mid, context.height, context.width, cfg.cnr_r);
     U16* v_mid = mid_filter(v, context.height, context.width, cfg.cnr_r);
-    v_mid = gauss_filter(v_mid, context.height, context.width, cfg.cnr_r);
+    //v_mid = gauss_filter(v_mid, context.height, context.width, cfg.cnr_r);
 #if DEBUG_MODE
     save_y("cnr_0_u.jpg", u, context.width, context.height, cfg.yuv_bit, 100);
     save_y("cnr_1_u_mid.jpg", u_mid, context.width, context.height, cfg.yuv_bit, 100);
