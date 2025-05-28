@@ -22,7 +22,8 @@ void load_cfg(G_CONFIG* cfg)
     cfg->awb_on = 1;
     cfg->ltm_on = 1;
     cfg->ccm_on = 1;
-    cfg->rgbgamma_on = 0;
+    cfg->rgbgamma_on = 1;
+    cfg->defog_on = 1;
     //cfg->ygamma_on = 0;
     //cfg->sharp_on = 0;
     cfg->ynr_on = 1;
@@ -121,16 +122,16 @@ void load_cfg(G_CONFIG* cfg)
     cfg->b_gain = 1024 * 1.79;
 
 
-    cfg->ltm_r = 1;
-    cfg->ltm_str = 1.8;
+    cfg->ltm_r = 20;
+    cfg->ltm_str = 1.3;
     cfg->ltm_gain_limit_max = 2;
     cfg->ltm_gain_limit_min = 0.0;
 
 
     float ccm_tmp[9] = {
 1.4,-0.2,-0.2,
--0.6,1.6,0,
--0.3,-0.3,1.6
+-0.7,1.7,0,
+-0.6,0.3,1.3
 
 
     };

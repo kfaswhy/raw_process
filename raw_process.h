@@ -37,6 +37,7 @@ typedef unsigned char U8;
 #define U16MAX (0xFFFF)
 #define U8MAX (255)
 #define U8MIN (0)
+#define U16MIN (0)
 #define M_PI 3.14159265358979323846
 
 #define calc_min(a,b) ((a)>(b)?(b):(a))
@@ -79,6 +80,7 @@ typedef struct _G_CONFIG
 	U8 ltm_on;
 	U8 ccm_on;
 	U8 rgbgamma_on;
+	U8 defog_on;
 	U8 ygamma_on;
 	U8 ynr_on;
 	U8 cnr_on;
@@ -187,8 +189,9 @@ U32 calc_inter(U32 x0, U32* x, U32* y, U32 len);
 void save_y(const char* filename, U16* y, U16 width, U16 height, U8 bit, int compression_quality);
 
 
-void save_img(const char* filename, RGB* img, IMG_CONTEXT* context, G_CONFIG cfg, int compression_quality);
 
+
+void save_img(const char* filename, RGB* img, U16 w, U16 h, U8 bit, int compression_quality);
 
 void save_img_with_timestamp(RGB* rgb_data, IMG_CONTEXT* context, const char* suffix);
 
@@ -199,6 +202,8 @@ static float* gen_gauss_kernel(U8 r, float sigma);
 static int compare_u16(const void* a, const void* b);
 
 U16* mid_filter(U16* y, U16 height, U16 width, U8 r);
+
+U16* min_filter(U16* y, U16 height, U16 width, U8 r);
 
 
 #endif //RAW_PROCESS_H

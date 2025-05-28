@@ -8,6 +8,7 @@
 #include "demosaic.h"
 #include "ccm.h"
 #include "rgbgamma.h"
+#include "defog.h"
 #include "r2y.h"
 //#include "ygamma.h" 
 #include "ynr.h"
@@ -66,6 +67,9 @@ int main()
 	//进入RGB域
 	ccm_process(rgb_data, context, cfg);
 	rgbgamma_process(rgb_data, context, cfg);
+	defog_process(rgb_data, context, cfg);
+
+
 	yuv_data = r2y_process(rgb_data, context, cfg);
 
 	//进入YUV域
@@ -477,25 +481,25 @@ void save_y(const char* filename, U16* y, U16 width, U16 height, U8 bit, int com
 }
 
 
-void save_img(const char* filename, RGB* img, IMG_CONTEXT* context, G_CONFIG cfg, int compression_quality = 100)
+void save_img(const char* filename, RGB* img, U16 w, U16 h, U8 bit, int compression_quality = 100)
 {
 	// 创建一个空的 OpenCV Mat 对象
-	cv::Mat mat_img(context->height, context->width, CV_8UC3);
+	cv::Mat mat_img(h, w, CV_8UC3);
 
 	// 填充 Mat 对象
-	for (int y = 0; y < context->height; y++) {
-		for (int x = 0; x < context->width; x++) {
-			RGB pixel = img[y * context->width + x];
+	for (int y = 0; y < h; y++) {
+		for (int x = 0; x < w; x++) {
+			RGB pixel = img[y * w + x];
 
-			if (cfg.rgb_bit >= 8)
+			if (bit >= 8)
 			{
 				mat_img.at<cv::Vec3b>(y, x) =
-					cv::Vec3b(pixel.b >> (cfg.rgb_bit - 8), pixel.g >> (cfg.rgb_bit - 8), pixel.r >> (cfg.rgb_bit - 8));
+					cv::Vec3b(pixel.b >> (bit - 8), pixel.g >> (bit - 8), pixel.r >> (bit - 8));
 			}
 			else
 			{
 				mat_img.at<cv::Vec3b>(y, x) =
-					cv::Vec3b(pixel.b << (8 - cfg.rgb_bit), pixel.g << (8 - cfg.rgb_bit), pixel.r << (8 - cfg.rgb_bit));
+					cv::Vec3b(pixel.b << (8 - bit), pixel.g << (8 - bit), pixel.r << (8 - bit));
 			}
 
 		}
@@ -531,7 +535,7 @@ void save_img_with_timestamp(RGB* rgb_data, IMG_CONTEXT* context, const char* su
 	snprintf(filename, sizeof(filename), "%s%s.jpg", buffer, suffix);
 
 	// 保存 BMP 文件
-	save_img(filename, rgb_data, context, cfg);
+	save_img(filename, rgb_data, context->width, context->height, cfg.rgb_bit, 100);
 }
 
 
@@ -634,5 +638,32 @@ U16* mid_filter(U16* y, U16 height, U16 width, U8 r) {
 	}
 
 	free(window);
+	return output;
+}
+
+U16* min_filter(U16* y, U16 height, U16 width, U8 r) {
+	if (!y || height == 0 || width == 0) return NULL;
+
+	U16* output = (U16*)malloc(height * width * sizeof(U16));
+	if (!output) return NULL;
+
+	for (U16 row = 0; row < height; row++) {
+		for (U16 col = 0; col < width; col++) {
+			U16 min_val = 0xFFFF; // 初始化为最大值
+			// 遍历邻域
+			for (int dy = -r; dy <= r; dy++) {
+				int ny = row + dy;
+				if (ny < 0 || ny >= height) continue;
+				for (int dx = -r; dx <= r; dx++) {
+					int nx = col + dx;
+					if (nx < 0 || nx >= width) continue;
+					U16 val = y[ny * width + nx];
+					if (val < min_val) min_val = val;
+				}
+			}
+			output[row * width + col] = min_val;
+		}
+	}
+
 	return output;
 }
