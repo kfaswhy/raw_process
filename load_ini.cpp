@@ -7,22 +7,22 @@
 void load_cfg(G_CONFIG* cfg)
 {
     cfg->bit = 16;
-    cfg->used_bit = 10;
+    cfg->used_bit = 12;
     cfg->order = LITTLE_ENDIAN;
-    cfg->pattern = BGGR;
-    cfg->width = 1440;
-    cfg->height = 1048;
+    cfg->pattern = RGGB;
+    cfg->width = 2592;
+    cfg->height = 1536;
 
     cfg->rgb_bit = 16;
     cfg->yuv_bit = 16;
 
     cfg->ob_on = 1;
-    cfg->lsc_on = 1;
-    cfg->isp_gain_on = 0;
+    cfg->lsc_on = 0;
+    cfg->isp_gain_on = 1;
     cfg->awb_on = 1;
     cfg->ltm_on = 1;
     cfg->ccm_on = 1;
-    cfg->rgbgamma_on = 1;
+    cfg->rgbgamma_on = 0;
     //cfg->ygamma_on = 0;
     //cfg->sharp_on = 0;
     cfg->ynr_on = 1;
@@ -30,7 +30,7 @@ void load_cfg(G_CONFIG* cfg)
     cfg->yuv_txi_on = 1;
 
     //12->16bit
-    cfg->ob = 64 * 16;
+    cfg->ob = 200 * 16;
 
 
     cfg->lsc_type = 0; //0为插值
@@ -114,18 +114,23 @@ void load_cfg(G_CONFIG* cfg)
     };
 
 
-    cfg->isp_gain = 1024 * 2;
+    cfg->isp_gain = 1024 * 1.5;
 
-    cfg->r_gain = 1024 * 2.17;
+    cfg->r_gain = 1024 * 1.79;
     cfg->g_gain = 1024 * 1;
-    cfg->b_gain = 1024 * 1.14;
+    cfg->b_gain = 1024 * 1.79;
 
+
+    cfg->ltm_r = 1;
+    cfg->ltm_str = 1.8;
+    cfg->ltm_gain_limit_max = 2;
+    cfg->ltm_gain_limit_min = 0.0;
 
 
     float ccm_tmp[9] = {
-1.24, -0.01, -0.24,
--0.19, 1.27, -0.13,
--0.06, -0.26, 1.37
+1.4,-0.2,-0.2,
+-0.6,1.6,0,
+-0.3,-0.3,1.6
 
 
     };
@@ -145,7 +150,7 @@ void load_cfg(G_CONFIG* cfg)
 
     cfg->txi_r_detail = 1;
     cfg->txi_r_bifilter = 1;
-    cfg->txi_str = 15;
+    cfg->txi_str = 5;
 
     //以下后处理
     U16 lsc_blk = cfg->lsc_wblock * cfg->lsc_hblock;

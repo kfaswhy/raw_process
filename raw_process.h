@@ -105,6 +105,12 @@ typedef struct _G_CONFIG
 	U16 r_gain;
 	U16 g_gain;
 	U16 b_gain;
+
+	//ltm
+	U8 ltm_r;
+	float ltm_str;
+	float ltm_gain_limit_max;
+	float ltm_gain_limit_min;
 	
 	//ccm
 	float ccm[9];

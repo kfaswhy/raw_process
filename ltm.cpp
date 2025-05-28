@@ -11,10 +11,10 @@ U8 ltm_process(U16* raw, IMG_CONTEXT context, G_CONFIG cfg)
         return OK;
     }
 
-    U8 range_r = 10;
+    /*U8 range_r = 10;
 	float str = 1.2;
 	float gain_limit_max = 2;
-	float gain_limit_min = 0.0;
+	float gain_limit_min = 0.0;*/
 
 
 	U16 y_h = context.height >> 1;
@@ -41,11 +41,12 @@ U8 ltm_process(U16* raw, IMG_CONTEXT context, G_CONFIG cfg)
 			y[index_y] = clp_range(0, Y, y_max);
 		}
 	}
+#if DEBUG_MODE
 	save_y("ltm_0_y.jpg", y, y_w, y_h, cfg.bit, 100);
-
+#endif
 
 	//高斯模糊
-    U16 *y_gauss = gauss_filter(y, y_h, y_w, range_r);
+    U16 *y_gauss = gauss_filter(y, y_h, y_w, cfg.ltm_r);
 #if DEBUG_MODE
     save_y("ltm_1_gauss.jpg", y_gauss, y_w, y_h, cfg.bit, 100);
 #endif
@@ -53,7 +54,7 @@ U8 ltm_process(U16* raw, IMG_CONTEXT context, G_CONFIG cfg)
 	//对比放大
 	for (U32 i = 0; i < y_h * y_w; i++)
 	{
-		S64 Y = ((S64)y[i] - y_gauss[i]) * str + y_gauss[i];
+		S64 Y = ((S64)y[i] - y_gauss[i]) * cfg.ltm_str + y_gauss[i];
 		y_enh[i] = clp_range(0, Y, y_max);
 	}
 
@@ -65,18 +66,18 @@ U8 ltm_process(U16* raw, IMG_CONTEXT context, G_CONFIG cfg)
 	for (U32 i = 0; i < y_h * y_w; i++)
 	{
 		if (y[i] == 0) {
-			gain_map[i] = gain_limit_max; // 避免除以零
+			gain_map[i] = cfg.ltm_gain_limit_max; // 避免除以零
 			continue;
 		}
 		float gain = (float)y_enh[i] / (float)y[i];
-		gain_map[i] = clp_range(gain_limit_min, gain, gain_limit_max);
+		gain_map[i] = clp_range(cfg.ltm_gain_limit_min, gain, cfg.ltm_gain_limit_max);
 	}
 
 
 	//debug:：输出gain图
 #if DEBUG_MODE
-	float k = (y_max - 0) / (gain_limit_max - gain_limit_min);
-	float b = -gain_limit_min * k;
+	float k = (y_max - 0) / (cfg.ltm_gain_limit_max - cfg.ltm_gain_limit_min);
+	float b = -cfg.ltm_gain_limit_min * k;
 	for (U32 i = 0; i < y_h * y_w; i++)
 	{
 		gainu16[i] = (U16)(k * gain_map[i] + b);
