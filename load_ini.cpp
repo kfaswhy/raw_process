@@ -25,9 +25,9 @@ void load_cfg(G_CONFIG* cfg)
     cfg->rgbgamma_on = 1;
     cfg->defog_on = 1;
     //cfg->ygamma_on = 0;
-    //cfg->sharp_on = 0;
-    cfg->ynr_on = 1;
-    cfg->cnr_on = 1;
+    cfg->sharp_on = 1;
+    cfg->ynr_on = 0;
+    cfg->cnr_on = 0;
     cfg->yuv_txi_on = 1;
 
     //12->16bit

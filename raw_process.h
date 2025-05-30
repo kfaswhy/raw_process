@@ -33,6 +33,7 @@ typedef int S32;
 typedef unsigned short U16;
 typedef short S16;
 typedef unsigned char U8;
+typedef char S8;
 
 #define U16MAX (0xFFFF)
 #define U8MAX (255)

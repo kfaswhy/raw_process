@@ -32,7 +32,6 @@ U8 yuv_txi_process(YUV* yuv, IMG_CONTEXT context, G_CONFIG cfg)
 
 
 #if DEBUG_MODE
-    
     save_y("txi_0_y.bmp", y, context.width, context.height, cfg.yuv_bit, 100);
 #endif
 
