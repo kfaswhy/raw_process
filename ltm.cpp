@@ -7,11 +7,11 @@
 
 U8 ltm_process(U16* raw, IMG_CONTEXT context, G_CONFIG cfg)
 {
-    if (cfg.ltm_on == 0) {
-        return OK;
-    }
+if (cfg.ltm_on == 0) {
+return OK;
+}
 
-    /*U8 range_r = 10;
+/*U8 range_r = 10;
 	float str = 1.2;
 	float gain_limit_max = 2;
 	float gain_limit_min = 0.0;*/
@@ -46,9 +46,9 @@ U8 ltm_process(U16* raw, IMG_CONTEXT context, G_CONFIG cfg)
 #endif
 
 	//高斯模糊
-    U16 *y_gauss = gauss_filter(y, y_h, y_w, cfg.ltm_r);
+U16 *y_gauss = gauss_filter(y, y_h, y_w, cfg.ltm_r);
 #if DEBUG_MODE
-    save_y("ltm_1_gauss.jpg", y_gauss, y_w, y_h, cfg.bit, 100);
+save_y("ltm_1_gauss.jpg", y_gauss, y_w, y_h, cfg.bit, 100);
 #endif
 
 	//对比放大
@@ -103,11 +103,11 @@ U8 ltm_process(U16* raw, IMG_CONTEXT context, G_CONFIG cfg)
 
 
 #if DEBUG_MODE
-    LOG("ltm done.");
-    RGB* rgb_data = raw2rgb(raw, context, cfg);
-    save_img_with_timestamp(rgb_data, &context, "_ltm");
-    free(rgb_data);
+LOG("ltm done.");
+RGB* rgb_data = raw2rgb(raw, context, cfg);
+save_img_with_timestamp(rgb_data, &context, "_ltm");
+free(rgb_data);
 #endif
 
-    return OK;
+return OK;
 }
