@@ -2,10 +2,10 @@
 //#include "raw_process.h"
 U8 defog_process(RGB* rgb, IMG_CONTEXT context, G_CONFIG cfg)
 {
-    if (cfg.defog_on == 0)
-    {
-        return OK;
-    }
+if (cfg.defog_on == 0)
+{
+return OK;
+}
 	//下采样比例
 	U8 smp_ratio = 4;
 
@@ -74,7 +74,7 @@ U8 defog_process(RGB* rgb, IMG_CONTEXT context, G_CONFIG cfg)
 
 	//trans放大
 	float *trans_ori = (float*)malloc(sizeof(float) * h0 * w0);
-    float_sampling(trans, trans_ori, w1, h1, w0, h0, 1);
+float_sampling(trans, trans_ori, w1, h1, w0, h0, 1);
 #if DEBUG_MODE
 
 	U16* trans_ori16 = (U16*)malloc(sizeof(U16) * h0 * w0);
@@ -87,25 +87,25 @@ U8 defog_process(RGB* rgb, IMG_CONTEXT context, G_CONFIG cfg)
 #endif
 
 
-    recover_img(rgb, rgb, trans_ori, light, w0, h0);
+recover_img(rgb, rgb, trans_ori, light, w0, h0);
 	save_img("defog_7_end.jpg", rgb, w0, h0, cfg.rgb_bit, 100);
 
 
 
-    //释放内存
-    free(img_dark);
-    free(img_darks);
-    free(img_s);
-    free(trans);
-    free(trans_ori);
+//释放内存
+free(img_dark);
+free(img_darks);
+free(img_s);
+free(trans);
+free(trans_ori);
 
 #if DEBUG_MODE
-    LOG("done.");
-    save_img_with_timestamp(rgb, &context, "_defog");
+LOG("done.");
+save_img_with_timestamp(rgb, &context, "_defog");
 #endif
-    
 
-    return OK;
+
+return OK;
 }
 
 
