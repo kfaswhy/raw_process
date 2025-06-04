@@ -7,28 +7,28 @@
 void load_cfg(G_CONFIG* cfg)
 {
     cfg->bit = 16;
-    cfg->used_bit = 12;
+    cfg->used_bit = 10;
     cfg->order = LITTLE_ENDIAN;
-    cfg->pattern = RGGB;
-    cfg->width = 2592;
-    cfg->height = 1536;
+    cfg->pattern = BGGR;
+    cfg->width = 1280;
+    cfg->height = 720;
 
     cfg->rgb_bit = 16;
     cfg->yuv_bit = 16;
 
-    cfg->ob_on = 1;
+    cfg->ob_on = 0;
     cfg->lsc_on = 0;
-    cfg->isp_gain_on = 1;
-    cfg->awb_on = 1;
-    cfg->ltm_on = 1;
-    cfg->ccm_on = 1;
-    cfg->rgbgamma_on = 1;
-    cfg->defog_on = 1;
+    cfg->isp_gain_on = 0;
+    cfg->awb_on = 0;
+    cfg->ltm_on = 0;
+    cfg->ccm_on = 0;
+    cfg->rgbgamma_on = 0;
+    cfg->defog_on = 0;
     //cfg->ygamma_on = 0;
-    cfg->sharp_on = 1;
+    cfg->sharp_on = 0;
     cfg->ynr_on = 0;
     cfg->cnr_on = 0;
-    cfg->yuv_txi_on = 1;
+    cfg->yuv_txi_on = 0;
 
     //12->16bit
     cfg->ob = 200 * 16;
