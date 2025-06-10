@@ -1,6 +1,6 @@
 #include "lsc.h"
 
-U8 lsc_process(U16* raw, IMG_CONTEXT context, G_CONFIG cfg)
+U8 lsc_process2(U16* raw, IMG_CONTEXT context, G_CONFIG cfg)
 {
     if (cfg.lsc_on == 0)
     {
@@ -432,6 +432,174 @@ U8 lsc_process(U16* raw, IMG_CONTEXT context, G_CONFIG cfg)
 
 
     return OK;
+}
+
+U8 lsc_process(U16* raw, IMG_CONTEXT context, G_CONFIG cfg)
+{
+    //计算用
+    if (cfg.lsc_on == 0)
+    {
+        return OK;
+    }
+
+    U16* chn1 = (U16*)malloc(cfg.lsc_wblock * cfg.lsc_hblock * sizeof(U16));
+    U16* chn2 = (U16*)malloc(cfg.lsc_wblock * cfg.lsc_hblock * sizeof(U16));
+    U16* chn3 = (U16*)malloc(cfg.lsc_wblock * cfg.lsc_hblock * sizeof(U16));
+    U16* chn4 = (U16*)malloc(cfg.lsc_wblock * cfg.lsc_hblock * sizeof(U16));
+
+    U16 block_w = context.width / cfg.lsc_wblock;
+    U16 block_h = context.height / cfg.lsc_hblock;
+
+    U16 max_val = 0;
+    U8 max_x = 0;
+    U8 max_y = 0;
+    U16 max_index = max_y * cfg.lsc_wblock + max_x;
+
+    //统计分块均值
+    for (U8 i = 0; i < cfg.lsc_hblock; i++)
+    {
+        for (U8 j = 0; j < cfg.lsc_wblock; j++)
+        {
+            U64 sum1 = 0, sum2 = 0, sum3 = 0, sum4 = 0;
+            U32 cnt1 = 0, cnt2 = 0, cnt3 = 0, cnt4 = 0;
+
+            U16 x0 = i * block_w;
+            U16 y0 = j * block_h;
+            U16 x1 = (j == cfg.lsc_wblock - 1) ? context.width : x0 + block_w;
+            U16 y1 = (i == cfg.lsc_hblock - 1) ? context.height : y0 + block_h;
+            for (U16 y = y0; y < y1; y++)
+            {
+                for (U16 x = x0; x < x1; x++)
+                {
+                    U32 index = y * context.width + x;
+                    if ((y % 2 == 0) && (x % 2 == 0)) 
+                    {
+                        sum1 += raw[index];
+                        cnt1++;
+                    }
+                    if ((y % 2 == 0) && (x % 2 == 1))
+                    {
+                        sum2 += raw[index];
+                        cnt2++;
+                    }
+                    if ((y % 2 == 1) && (x % 2 == 0))
+                    {
+                        sum3 += raw[index];
+                        cnt3++;
+                    }
+                    if ((y % 2 == 1) && (x % 2 == 1))
+                    {
+                        sum4 += raw[index];
+                        cnt4++;
+                    }
+                }
+            }
+
+            U16 blk_index = j * cfg.lsc_wblock + i;
+            chn1[blk_index] = (cnt1 > 0) ? (U16)(sum1 / cnt1) : 0;
+            chn2[blk_index] = (cnt2 > 0) ? (U16)(sum2 / cnt2) : 0;
+            chn3[blk_index] = (cnt3 > 0) ? (U16)(sum3 / cnt3) : 0;
+            chn4[blk_index] = (cnt4 > 0) ? (U16)(sum4 / cnt4) : 0;
+            if (chn1[blk_index] > max_val)
+            {
+                max_x = j;
+                max_y = i;
+                max_val = chn1[blk_index];
+            }
+
+            if (chn2[blk_index] > max_val)
+            {
+                max_x = j;
+                max_y = i;
+                max_val = chn2[blk_index];
+            }
+                
+            if (chn3[blk_index] > max_val)
+            {
+                max_x = j;
+                max_y = i;
+                max_val = chn3[blk_index];
+            }
+
+            if (chn4[blk_index] > max_val)
+            {
+                max_x = j;
+                max_y = i;
+                max_val = chn4[blk_index];
+            }
+        }
+    }
+
+    //计算极值
+    max_index = max_y * cfg.lsc_wblock + max_x;
+    LOG("max_blk = [%u ,%u, %u，%u] at (%u,%u).",
+        chn1[max_index], chn2[max_index], chn3[max_index], chn4[max_index], max_x, max_y);
+
+
+
+
+
+    switch (cfg.pattern)
+    {
+    case BGGR:
+        write_csv("lsc.csv", chn4, chn3, chn2, chn1, cfg.lsc_wblock, cfg.lsc_hblock);
+        break;
+    case RGGB:
+        write_csv("lsc.csv", chn1, chn2, chn3, chn4, cfg.lsc_wblock, cfg.lsc_hblock);
+        break;
+    default:
+        break;
+    }
+
+
+    return OK;
+}
+
+
+void write_csv(const char* filename, U16* r, U16* gr, U16* gb, U16* b, int wblock, int hblock) {
+    FILE* f = fopen(filename, "w");
+    if (!f) return;
+
+    for (int j = 0; j < hblock; j++) {
+        for (int i = 0; i < wblock; i++) {
+            fprintf(f, "%u", r[j * wblock + i]);
+            if (i < wblock - 1)
+                fprintf(f, ",");
+        }
+        fprintf(f, "\n");
+    }
+    fprintf(f, "\n");
+
+    for (int j = 0; j < hblock; j++) {
+        for (int i = 0; i < wblock; i++) {
+            fprintf(f, "%u", gr[j * wblock + i]);
+            if (i < wblock - 1)
+                fprintf(f, ",");
+        }
+        fprintf(f, "\n");
+    }
+    fprintf(f, "\n");
+
+    for (int j = 0; j < hblock; j++) {
+        for (int i = 0; i < wblock; i++) {
+            fprintf(f, "%u", gb[j * wblock + i]);
+            if (i < wblock - 1)
+                fprintf(f, ",");
+        }
+        fprintf(f, "\n");
+    }
+    fprintf(f, "\n");
+
+    for (int j = 0; j < hblock; j++) {
+        for (int i = 0; i < wblock; i++) {
+            fprintf(f, "%u", b[j * wblock + i]);
+            if (i < wblock - 1)
+                fprintf(f, ",");
+        }
+        fprintf(f, "\n");
+    }
+
+    fclose(f);
 }
 
 

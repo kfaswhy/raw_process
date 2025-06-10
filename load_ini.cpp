@@ -17,7 +17,7 @@ void load_cfg(G_CONFIG* cfg)
     cfg->yuv_bit = 16;
 
     cfg->ob_on = 0;
-    cfg->lsc_on = 0;
+    cfg->lsc_on = 1;
     cfg->isp_gain_on = 0;
     cfg->awb_on = 0;
     cfg->ltm_on = 0;
