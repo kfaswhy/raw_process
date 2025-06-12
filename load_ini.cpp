@@ -18,9 +18,9 @@ void load_cfg(G_CONFIG* cfg)
 
     cfg->ob_on = 1;
     cfg->lsc_on = 0;
-    cfg->isp_gain_on = 1;
+    cfg->isp_gain_on = 0;
     cfg->awb_on = 1;
-    cfg->ltm_on = 1;
+    cfg->ltm_on = 0;
     cfg->ccm_on = 1;
     cfg->rgbgamma_on = 1;
     cfg->defog_on = 1;
