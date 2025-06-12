@@ -26,9 +26,9 @@ void load_cfg(G_CONFIG* cfg)
     cfg->defog_on = 0;
     //cfg->ygamma_on = 0;
     cfg->sharp_on = 0;
-    cfg->ynr_on = 0;
-    cfg->cnr_on = 0;
-    cfg->yuv_txi_on = 0;
+    cfg->ynr_on = 1;
+    cfg->cnr_on = 1;
+    cfg->yuv_txi_on = 1;
 
     //12->16bit
     cfg->ob = 64 * 16;
@@ -91,7 +91,7 @@ void load_cfg(G_CONFIG* cfg)
 
     cfg->txi_r_detail = 1;
     cfg->txi_r_bifilter = 1;
-    cfg->txi_str = 5;
+    cfg->txi_str = 20;
 
     //以下后处理
     U16 lsc_blk = cfg->lsc_wblock * cfg->lsc_hblock;
