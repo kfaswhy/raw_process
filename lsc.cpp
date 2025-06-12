@@ -1,6 +1,6 @@
 #include "lsc.h"
 
-U8 lsc_process2(U16* raw, IMG_CONTEXT context, G_CONFIG cfg)
+U8 lsc_process(U16* raw, IMG_CONTEXT context, G_CONFIG cfg)
 {
 	if (cfg.lsc_on == 0)
 	{
@@ -434,7 +434,7 @@ U8 lsc_process2(U16* raw, IMG_CONTEXT context, G_CONFIG cfg)
 	return OK;
 }
 
-U8 lsc_process(U16* raw, IMG_CONTEXT context, G_CONFIG cfg)
+U8 lsc_process2(U16* raw, IMG_CONTEXT context, G_CONFIG cfg)
 {
     //计算用
     if (cfg.lsc_on == 0)
@@ -442,14 +442,34 @@ U8 lsc_process(U16* raw, IMG_CONTEXT context, G_CONFIG cfg)
         return OK;
     }
 
+    //校正强度
+    float k = 0.2;
+
     U16* chn1 = (U16*)malloc(cfg.lsc_wblock * cfg.lsc_hblock * sizeof(U16));
     U16* chn2 = (U16*)malloc(cfg.lsc_wblock * cfg.lsc_hblock * sizeof(U16));
     U16* chn3 = (U16*)malloc(cfg.lsc_wblock * cfg.lsc_hblock * sizeof(U16));
     U16* chn4 = (U16*)malloc(cfg.lsc_wblock * cfg.lsc_hblock * sizeof(U16));
+    U16* chn = (U16*)malloc(cfg.lsc_wblock * cfg.lsc_hblock * sizeof(U16));
 
-    U16 block_w = context.width / cfg.lsc_wblock;
-    U16 block_h = context.height / cfg.lsc_hblock;
+    U16 chn1_max = 0;
+    U16 chn2_max = 0;
+    U16 chn3_max = 0;
+    U16 chn4_max = 0;
+    //U16 chn1_min = 0;
+    //U16 chn2_min = 0;
+    //U16 chn3_min = 0;
+    //U16 chn4_min = 0;
 
+    U16* r = NULL;
+    U16* gr = NULL;
+    U16* gb = NULL;
+    U16* b = NULL;
+
+    U16 block_w = context.width / cfg.lsc_wblock + 0;
+    U16 block_h = context.height / cfg.lsc_hblock + 0;
+
+
+    //U16 min_val = U16MAX;
     U16 max_val = 0;
     U8 max_x = 0;
     U8 max_y = 0;
@@ -463,8 +483,13 @@ U8 lsc_process(U16* raw, IMG_CONTEXT context, G_CONFIG cfg)
             U64 sum1 = 0, sum2 = 0, sum3 = 0, sum4 = 0;
             U32 cnt1 = 0, cnt2 = 0, cnt3 = 0, cnt4 = 0;
 
-            U16 x0 = i * block_w;
-            U16 y0 = j * block_h;
+            if (i == 15 && j == 25)
+            {
+                i = i;
+            }
+
+            U16 x0 = j * block_w;
+            U16 y0 = i * block_h;
             U16 x1 = (j == cfg.lsc_wblock - 1) ? context.width : x0 + block_w;
             U16 y1 = (i == cfg.lsc_hblock - 1) ? context.height : y0 + block_h;
             for (U16 y = y0; y < y1; y++)
@@ -472,85 +497,118 @@ U8 lsc_process(U16* raw, IMG_CONTEXT context, G_CONFIG cfg)
                 for (U16 x = x0; x < x1; x++)
                 {
                     U32 index = y * context.width + x;
-                    if ((y % 2 == 0) && (x % 2 == 0)) 
-                    {
-                        sum1 += raw[index];
-                        cnt1++;
-                    }
-                    if ((y % 2 == 0) && (x % 2 == 1))
-                    {
-                        sum2 += raw[index];
-                        cnt2++;
-                    }
-                    if ((y % 2 == 1) && (x % 2 == 0))
-                    {
-                        sum3 += raw[index];
-                        cnt3++;
-                    }
-                    if ((y % 2 == 1) && (x % 2 == 1))
-                    {
-                        sum4 += raw[index];
-                        cnt4++;
-                    }
+                    if ((y % 2 == 0) && (x % 2 == 0)) { sum1 += raw[index]; cnt1++; }
+                    if ((y % 2 == 0) && (x % 2 == 1)) { sum2 += raw[index]; cnt2++; }
+                    if ((y % 2 == 1) && (x % 2 == 0)) { sum3 += raw[index]; cnt3++; }
+                    if ((y % 2 == 1) && (x % 2 == 1)) { sum4 += raw[index]; cnt4++; }
                 }
             }
 
-            U16 blk_index = j * cfg.lsc_wblock + i;
+            U16 blk_index = i * cfg.lsc_wblock + j;
             chn1[blk_index] = (cnt1 > 0) ? (U16)(sum1 / cnt1) : 0;
             chn2[blk_index] = (cnt2 > 0) ? (U16)(sum2 / cnt2) : 0;
             chn3[blk_index] = (cnt3 > 0) ? (U16)(sum3 / cnt3) : 0;
             chn4[blk_index] = (cnt4 > 0) ? (U16)(sum4 / cnt4) : 0;
-            if (chn1[blk_index] > max_val)
-            {
-                max_x = j;
-                max_y = i;
-                max_val = chn1[blk_index];
-            }
 
-            if (chn2[blk_index] > max_val)
-            {
-                max_x = j;
-                max_y = i;
-                max_val = chn2[blk_index];
-            }
-                
-            if (chn3[blk_index] > max_val)
-            {
-                max_x = j;
-                max_y = i;
-                max_val = chn3[blk_index];
-            }
+            if (chn1[blk_index] > max_val) { max_x = j; max_y = i; max_val = chn1[blk_index]; }
+            if (chn2[blk_index] > max_val) { max_x = j; max_y = i; max_val = chn2[blk_index]; }
+            if (chn3[blk_index] > max_val) { max_x = j; max_y = i; max_val = chn3[blk_index]; }
+            if (chn4[blk_index] > max_val) { max_x = j; max_y = i; max_val = chn4[blk_index]; }
 
-            if (chn4[blk_index] > max_val)
-            {
-                max_x = j;
-                max_y = i;
-                max_val = chn4[blk_index];
-            }
         }
     }
 
     //计算极值
     max_index = max_y * cfg.lsc_wblock + max_x;
+    chn1_max = chn1[max_index];
+    chn2_max = chn2[max_index];
+    chn3_max = chn3[max_index];
+    chn4_max = chn4[max_index];
     LOG("max_blk = [%u ,%u, %u，%u] at (%u,%u).",
-        chn1[max_index], chn2[max_index], chn3[max_index], chn4[max_index], max_x, max_y);
+        chn1_max, chn2_max, chn3_max, chn4_max, max_x, max_y);
+
+    //计算总增益
+    for (U8 i = 0; i < cfg.lsc_hblock; i++)
+    {
+        for (U8 j = 0; j < cfg.lsc_wblock; j++)
+        {
+            U16 blk_index = i * cfg.lsc_wblock + j;
+            chn1[blk_index] = (U16)((U32)chn1_max * GAIN_FACTOR / chn1[blk_index]);
+            chn2[blk_index] = (U16)((U32)chn2_max * GAIN_FACTOR / chn2[blk_index]);
+            chn3[blk_index] = (U16)((U32)chn3_max * GAIN_FACTOR / chn3[blk_index]);
+            chn4[blk_index] = (U16)((U32)chn4_max * GAIN_FACTOR / chn4[blk_index]);
+            chn[blk_index] = calc_min4(chn1[blk_index], chn2[blk_index], chn3[blk_index], chn4[blk_index]);
+        }
+    }
 
 
-
-
-
+    //匹配通道
     switch (cfg.pattern)
     {
     case BGGR:
-        write_csv("lsc.csv", chn4, chn3, chn2, chn1, cfg.lsc_wblock, cfg.lsc_hblock);
+        r = chn4;
+        gr = chn3;
+        gb = chn2;
+        b = chn1;
         break;
     case RGGB:
-        write_csv("lsc.csv", chn1, chn2, chn3, chn4, cfg.lsc_wblock, cfg.lsc_hblock);
+        r = chn1;
+        gr = chn2;
+        gb = chn3;
+        b = chn4;
+        break;
+    case GBRG:
+        r = chn3;
+        gr = chn4;
+        gb = chn1;
+        b = chn2;
+        break;
+    case GRBG:
+        r = chn2;
+        gr = chn1;
+        gb = chn4;
+        b = chn3;
         break;
     default:
         break;
     }
 
+    //输出总增益
+    write_csv("lsc_0_100.csv", r, gr, gb, b, cfg.lsc_wblock, cfg.lsc_hblock);
+
+    //输出亮度增益
+    write_csv("lsc_1_100luma.csv", chn, chn, chn, chn, cfg.lsc_wblock, cfg.lsc_hblock);
+
+    //计算并输出色彩增益
+    for (U16 i = 0; i < cfg.lsc_hblock * cfg.lsc_wblock; i++)
+    { 
+        r[i] = (U16)((U32)GAIN_FACTOR * r[i] / chn[i]);
+        gr[i] = (U16)((U32)GAIN_FACTOR * gr[i] / chn[i]);
+        gb[i] = (U16)((U32)GAIN_FACTOR * gb[i] / chn[i]);
+        b[i] = (U16)((U32)GAIN_FACTOR * b[i] / chn[i]);
+    }
+    write_csv("lsc_2_color.csv", r, gr, gb, b, cfg.lsc_wblock, cfg.lsc_hblock);
+
+
+    //计算百分比亮度增益
+
+
+    for (U16 i = 0; i < cfg.lsc_hblock * cfg.lsc_wblock; i++)
+    {
+        chn[i] = (chn[i] - GAIN_FACTOR) * k + GAIN_FACTOR;
+    }
+    write_csv("lsc_3_kluma.csv", chn, chn, chn, chn, cfg.lsc_wblock, cfg.lsc_hblock);
+
+    //计算融合增益
+    for (U16 i = 0; i < cfg.lsc_hblock * cfg.lsc_wblock; i++)
+    {
+        r[i] = (U16)((U32)r[i] * chn[i] / GAIN_FACTOR);
+        gr[i] = (U16)((U32)gr[i] * chn[i] / GAIN_FACTOR);
+        gb[i] = (U16)((U32)gb[i] * chn[i] / GAIN_FACTOR);
+        b[i] = (U16)((U32)b[i] * chn[i] / GAIN_FACTOR);
+
+    }
+    write_csv("lsc_4_k.csv", r, gr, gb, b, cfg.lsc_wblock, cfg.lsc_hblock);
 
     return OK;
 }
@@ -560,48 +618,71 @@ void write_csv(const char* filename, U16* r, U16* gr, U16* gb, U16* b, int wbloc
     FILE* f = fopen(filename, "w");
     if (!f) return;
 
+
+    fprintf(f, "U16 lsc_tmpr[] = {\n");
     for (int j = 0; j < hblock; j++) {
         for (int i = 0; i < wblock; i++) {
             fprintf(f, "%u", r[j * wblock + i]);
             if (i < wblock - 1)
                 fprintf(f, ",");
         }
-        fprintf(f, "\n");
-    }
-    fprintf(f, "\n");
 
+        if (j != hblock - 1)
+            fprintf(f, ",\n");
+    }
+    fprintf(f, "\n};\n");
+
+
+    fprintf(f, "U16 lsc_tmpgr[] = {\n");
     for (int j = 0; j < hblock; j++) {
         for (int i = 0; i < wblock; i++) {
             fprintf(f, "%u", gr[j * wblock + i]);
             if (i < wblock - 1)
                 fprintf(f, ",");
         }
-        fprintf(f, "\n");
+        if (j != hblock - 1)
+            fprintf(f, ",\n");
     }
-    fprintf(f, "\n");
+    fprintf(f, "\n};\n");
 
+    fprintf(f, "U16 lsc_tmpgb[] = {\n");
     for (int j = 0; j < hblock; j++) {
         for (int i = 0; i < wblock; i++) {
             fprintf(f, "%u", gb[j * wblock + i]);
             if (i < wblock - 1)
                 fprintf(f, ",");
         }
-        fprintf(f, "\n");
+        if (j != hblock - 1)
+            fprintf(f, ",\n");
     }
-    fprintf(f, "\n");
+    fprintf(f, "\n};\n");
 
+    fprintf(f, "U16 lsc_tmpb[] = {\n");
     for (int j = 0; j < hblock; j++) {
         for (int i = 0; i < wblock; i++) {
             fprintf(f, "%u", b[j * wblock + i]);
             if (i < wblock - 1)
                 fprintf(f, ",");
         }
-        fprintf(f, "\n");
+        if (j != hblock - 1)
+            fprintf(f, ",\n");
     }
+    fprintf(f, "\n};\n");
+
 
     fclose(f);
 }
 
+
+U16 calc_min4(U16 a, U16 b, U16 c, U16 d)
+{
+    U16 min = U16MAX;
+    min = calc_min(min, a);
+    min = calc_min(min, b);
+    min = calc_min(min, c);
+    min = calc_min(min, d);
+    return min;
+}
 
 U32 bilinear_interp(U16 left_top, U16 left_bottom, U16 right_top, U16 right_bottom, double x_weight, double y_weight)
 {
