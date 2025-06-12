@@ -97,7 +97,7 @@ int main()
 
 
 void clear_tmp() {
-	std::string extensions[] = { ".jpg", ".png", ".bmp" };
+	std::string extensions[] = { ".jpg", ".png", ".bmp", ".csv" };
 
 	for (const auto& entry : fs::directory_iterator(".")) {
 		if (fs::is_regular_file(entry.path())) { // Use fs::is_regular_file
