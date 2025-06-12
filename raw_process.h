@@ -24,8 +24,6 @@
 #include <filesystem>
 //#include <experimental/filesystem>
 
-
-
 typedef unsigned long long U64;
 typedef long long S64;
 typedef unsigned int U32;
@@ -100,7 +98,6 @@ typedef struct _G_CONFIG
 	U16* lsc_gbgain;
 	U16* lsc_bgain;
 
-
 	//isp_gain
 	U16 isp_gain;
 
@@ -164,33 +161,21 @@ typedef struct _IMG_CONTEXT
 }IMG_CONTEXT;
 
 
-
 int main();
 
 void clear_tmp();
 
 RGB* raw2rgb(U16* raw, IMG_CONTEXT context, G_CONFIG cfg);
 
-// 函数声明：读取 RAW 数据到一维数组
-
 U16* readraw(const char* filename, IMG_CONTEXT context, G_CONFIG cfg);
-
-RGB* yyy2rgb_process(YUV* yuv, IMG_CONTEXT context, G_CONFIG cfg);
 
 void safe_free(void* p);
 
 void print_prog(U32 cur_pos, U32 tgt);
 
-RGB* load_bmp(const char* filename, IMG_CONTEXT* context);
-
-void save_bmp(const char* filename, RGB* img, IMG_CONTEXT* context);
-
 U32 calc_inter(U32 x0, U32* x, U32* y, U32 len);
 
 void save_y(const char* filename, U16* y, U16 width, U16 height, U8 bit, int compression_quality);
-
-
-
 
 void save_img(const char* filename, RGB* img, U16 w, U16 h, U8 bit, int compression_quality);
 
