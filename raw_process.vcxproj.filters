@@ -57,6 +57,21 @@
     <ClCompile Include="lsc.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
+    <ClCompile Include="cnr.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="defog.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="load_ini.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="ynr.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="gic.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="raw_process.h">
@@ -99,6 +114,21 @@
       <Filter>头文件</Filter>
     </ClInclude>
     <ClInclude Include="lsc.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="cnr.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="defog.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="load_ini.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="ynr.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="gic.h">
       <Filter>头文件</Filter>
     </ClInclude>
   </ItemGroup>

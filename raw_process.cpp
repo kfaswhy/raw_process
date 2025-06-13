@@ -3,6 +3,7 @@
 #include "ob.h"
 #include "lsc.h"
 #include "isp_gain.h"
+#include "gic.h"
 #include "awb.h"
 #include "ltm.h"
 #include "demosaic.h"
@@ -60,6 +61,7 @@ int main()
 	ob_process(raw, context, cfg);
 	lsc_process(raw, context, cfg);
 	isp_gain_process(raw, context, cfg);
+	gic_process(raw, context, cfg);
 	awb_process(raw, context, cfg);
 	ltm_process(raw, context, cfg);
 	rgb_data = demosaic_process(raw, context, cfg);
