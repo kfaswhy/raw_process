@@ -148,6 +148,7 @@
     <ClCompile Include="cnr.cpp" />
     <ClCompile Include="defog.cpp" />
     <ClCompile Include="demosaic.cpp" />
+    <ClCompile Include="gic.cpp" />
     <ClCompile Include="isp_gain.cpp" />
     <ClCompile Include="load_ini.cpp" />
     <ClCompile Include="lsc.cpp" />
@@ -168,6 +169,7 @@
     <ClInclude Include="cnr.h" />
     <ClInclude Include="defog.h" />
     <ClInclude Include="demosaic.h" />
+    <ClInclude Include="gic.h" />
     <ClInclude Include="isp_gain.h" />
     <ClInclude Include="load_ini.h" />
     <ClInclude Include="lsc.h" />
