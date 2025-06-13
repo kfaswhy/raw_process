@@ -75,6 +75,7 @@ typedef struct _G_CONFIG
 	U8 ob_on;
 	U8 lsc_on;
 	U8 isp_gain_on;
+	U8 gic_on;
 	U8 awb_on;
 	U8 ltm_on;
 	U8 ccm_on;
@@ -100,6 +101,10 @@ typedef struct _G_CONFIG
 
 	//isp_gain
 	U16 isp_gain;
+
+	//gic
+	float gic_str;//校正强度，0表示不校正，1表示完全校正	
+	float gic_thd;//gr和gb比值大于此不做校正
 
 	//awb
 	U16 r_gain;

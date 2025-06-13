@@ -19,6 +19,7 @@ void load_cfg(G_CONFIG* cfg)
     cfg->ob_on = 0;
     cfg->lsc_on = 1;
     cfg->isp_gain_on = 0;
+    cfg->gic_on = 1;
     cfg->awb_on = 0;
     cfg->ltm_on = 0;
     cfg->ccm_on = 0;
@@ -117,6 +118,9 @@ void load_cfg(G_CONFIG* cfg)
 #endif
 
     cfg->isp_gain = 1024 * 1.5;
+
+    cfg->gic_str = 0.8;
+    cfg->gic_thd = 1.25;
 
     cfg->r_gain = 1024 * 1.79;
     cfg->g_gain = 1024 * 1;
