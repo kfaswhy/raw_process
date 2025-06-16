@@ -2,23 +2,15 @@
 //#include "raw_process.h"
 U8 defog_process(RGB* rgb, IMG_CONTEXT context, G_CONFIG cfg)
 {
-if (cfg.defog_on == 0)
-{
-return OK;
-}
-	//下采样比例
-	U8 smp_ratio = 4;
-
-	//大气光计算
-	float light_ratio = 1.0;//大气光缩放
-
-	//透射系数
-	float defog_str = 0.5; //去雾强度
+	if (cfg.defog_on == 0)
+	{
+		return OK;
+	}
 
 	U16 w0 = context.width;
 	U16 h0 = context.height;
-	U16 w1 = w0 / smp_ratio;
-	U16 h1 = h0 / smp_ratio;
+	U16 w1 = w0 / cfg.defog_smp_ratio;
+	U16 h1 = h0 / cfg.defog_smp_ratio;
 
 	U16 y_max = (1 << cfg.rgb_bit) - 1;
 
@@ -52,11 +44,11 @@ return OK;
 	save_img("defog_4_smp.bmp", img_s, w1, h1, cfg.rgb_bit, 100);
 
 	//估算大气光
-	RGB light = calc_atmos_light(img_s, img_darks, w1, h1, light_ratio);
+	RGB light = calc_atmos_light(img_s, img_darks, w1, h1, cfg.light_ratio);
 
 	//估算透射系数
 	float* trans = (float*)malloc(sizeof(float) * h1 * w1);
-	calc_trans(img_s, trans, img_darks, light, defog_str, w1, h1);
+	calc_trans(img_s, trans, img_darks, light, cfg.defog_str, w1, h1);
 
 	//生成trans图
 #if DEBUG_MODE

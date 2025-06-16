@@ -124,6 +124,11 @@ typedef struct _G_CONFIG
 	U32 gamma_x[GAMMA_LENGTH];
 	U32 gamma_y[GAMMA_LENGTH];
 
+	//defog	
+	U8 defog_smp_ratio;//下采样比例
+	float light_ratio;//大气光缩放
+	float defog_str; //去雾强度
+
 	//ynr
 	U8 ynr_r;
 
