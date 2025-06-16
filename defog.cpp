@@ -13,7 +13,7 @@ U8 defog_process(RGB* rgb, IMG_CONTEXT context, G_CONFIG cfg)
 	float light_ratio = 1.0;//大气光缩放
 
 	//透射系数
-	float defog_str = 0.5; //去雾强度
+	float defog_str = 0.15; //去雾强度
 
 	U16 w0 = context.width;
 	U16 h0 = context.height;
