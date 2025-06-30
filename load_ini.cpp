@@ -172,28 +172,70 @@ void load_cfg(G_CONFIG* cfg)
 	memcpy(cfg->lsc_grgain, lsc_tmpgr, sizeof(U16) * lsc_blk);
 	memcpy(cfg->lsc_gbgain, lsc_tmpgb, sizeof(U16) * lsc_blk);
 
-
-	memcpy(cfg->ccm, ccm_tmp, 9 * sizeof(float));
-	if (cfg->rgb_bit > 12)
-	{
-		U8 shift = cfg->rgb_bit - 12;
-		for (int i = 0; i < GAMMA_LENGTH; i++)
-		{
-			cfg->gamma_x[i] = gamma_xtmp[i] << shift;
-			cfg->gamma_y[i] = gamma_ytmp[i] << shift;
-		}
-	}
-	else if (cfg->rgb_bit < 12)
-	{
-		U8 shift = 12 - cfg->rgb_bit;
-		for (int i = 0; i < GAMMA_LENGTH; i++)
-		{
-			cfg->gamma_x[i] = gamma_xtmp[i] >> shift;
-			cfg->gamma_y[i] = gamma_ytmp[i] >> shift;
-		}
-	}
+    if (cfg->awb_on == 0)
+    {
+        cfg->r_gain = 1024;
+        cfg->g_gain = 1024;
+        cfg->b_gain = 1024;
+    }
+    if (cfg->ccm_on == 1)
+    {
+        memcpy(cfg->ccm, ccm_tmp, 9 * sizeof(float));
+    }
+    else 
+    {
+        // 如果不启用CCM，则设置为单位矩阵
+        cfg->ccm[0] = 1.0f; cfg->ccm[1] = 0.0f; cfg->ccm[2] = 0.0f;
+        cfg->ccm[3] = 0.0f; cfg->ccm[4] = 1.0f; cfg->ccm[5] = 0.0f;
+        cfg->ccm[6] = 0.0f; cfg->ccm[7] = 0.0f; cfg->ccm[8] = 1.0f;
+    }
+    calc_NAI((float)cfg->r_gain / 1024, (float)cfg->g_gain / 1024,
+        (float)cfg->b_gain / 1024, cfg->ccm);
+   
+    if (cfg->rgb_bit > 12)
+    {
+        U8 shift = cfg->rgb_bit - 12;
+        for (int i = 0; i < GAMMA_LENGTH; i++)
+        {
+            cfg->gamma_x[i] = gamma_xtmp[i] << shift;
+            cfg->gamma_y[i] = gamma_ytmp[i] << shift;
+        }
+    }
+    else if (cfg->rgb_bit < 12)
+    {
+        U8 shift = 12 - cfg->rgb_bit;
+        for (int i = 0; i < GAMMA_LENGTH; i++)
+        {
+            cfg->gamma_x[i] = gamma_xtmp[i] >> shift;
+            cfg->gamma_y[i] = gamma_ytmp[i] >> shift;
+        }
+    }
 
 	return;
+}
+
+void calc_NAI(float rg, float gg, float bg, float* ccm)
+{
+    float nai[3] = { 0 };
+
+  
+
+    // 增益平方
+    float gains[3] = {
+        rg * rg,
+        gg * gg,
+        bg * bg
+    };
+
+    // 计算每个输出通道的NAI
+    for (int out_c = 0; out_c < 3; ++out_c) {
+        for (int in_c = 0; in_c < 3; ++in_c) {
+            float coeff = ccm[out_c * 3 + in_c];  // 行主序访问
+            nai[out_c] += coeff * coeff * gains[in_c];
+        }
+    }
+
+    LOG("NAI = [%.2f, %.2f, %.2f]\n", nai[0], nai[1], nai[2]);
 }
 
 // 从 INI 文件加载配置
