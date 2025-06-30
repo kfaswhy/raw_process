@@ -5,6 +5,8 @@
 
 void load_cfg(G_CONFIG* cfg);
 
+void calc_NAI(float rg, float gg, float bg, float* ccm);
+
 void load_cfg_from_ini(const char* filename, G_CONFIG* cfg);
 
 static char* trim(char* s);
