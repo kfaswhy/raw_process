@@ -10,16 +10,16 @@ void load_cfg(G_CONFIG* cfg)
     cfg->used_bit = 10;
     cfg->order = LITTLE_ENDIAN;
     cfg->pattern = BGGR;
-    cfg->width = 1280;
-    cfg->height = 720;
+    cfg->width = 1440;
+    cfg->height = 1080;
 
     cfg->rgb_bit = 16;
     cfg->yuv_bit = 16;
 
-    cfg->ob_on = 0;
+    cfg->ob_on = 1;
     cfg->lsc_on = 1;
     cfg->isp_gain_on = 0;
-    cfg->gic_on = 1;
+    cfg->gic_on = 0;
     cfg->awb_on = 0;
     cfg->ltm_on = 0;
     cfg->ccm_on = 0;
