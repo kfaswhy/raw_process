@@ -606,6 +606,9 @@ U8 lsc_process2(U16* raw, IMG_CONTEXT context, G_CONFIG cfg)
     //计算融合增益
     for (U16 i = 0; i < cfg.lsc_hblock * cfg.lsc_wblock; i++)
     {
+        
+        
+        
         r[i] = (U16)((U32)r[i] * chn[i] / GAIN_FACTOR);
         gr[i] = (U16)((U32)gr[i] * chn[i] / GAIN_FACTOR);
         gb[i] = (U16)((U32)gb[i] * chn[i] / GAIN_FACTOR);
