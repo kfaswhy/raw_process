@@ -533,10 +533,14 @@ U8 lsc_process2(U16* raw, IMG_CONTEXT context, G_CONFIG cfg)
         for (U8 j = 0; j < cfg.lsc_wblock; j++)
         {
             U16 blk_index = i * cfg.lsc_wblock + j;
-            chn1[blk_index] = (U16)((U32)chn1_max * GAIN_FACTOR / chn1[blk_index]);
-            chn2[blk_index] = (U16)((U32)chn2_max * GAIN_FACTOR / chn2[blk_index]);
-            chn3[blk_index] = (U16)((U32)chn3_max * GAIN_FACTOR / chn3[blk_index]);
-            chn4[blk_index] = (U16)((U32)chn4_max * GAIN_FACTOR / chn4[blk_index]);
+            chn1[blk_index] = (chn1[blk_index] == 0 ? cfg.lsc_max_gain : (U16)((U32)chn1_max * GAIN_FACTOR / chn1[blk_index]));
+            chn2[blk_index] = (chn2[blk_index] == 0 ? cfg.lsc_max_gain : (U16)((U32)chn2_max * GAIN_FACTOR / chn2[blk_index]));
+            chn3[blk_index] = (chn3[blk_index] == 0 ? cfg.lsc_max_gain : (U16)((U32)chn3_max * GAIN_FACTOR / chn3[blk_index]));
+            chn4[blk_index] = (chn4[blk_index] == 0 ? cfg.lsc_max_gain : (U16)((U32)chn4_max * GAIN_FACTOR / chn4[blk_index]));
+            //chn1[blk_index] = (U16)((U32)chn1_max * GAIN_FACTOR / chn1[blk_index]);
+            //chn2[blk_index] = (U16)((U32)chn2_max * GAIN_FACTOR / chn2[blk_index]);
+            //chn3[blk_index] = (U16)((U32)chn3_max * GAIN_FACTOR / chn3[blk_index]);
+            //chn4[blk_index] = (U16)((U32)chn4_max * GAIN_FACTOR / chn4[blk_index]);
             chn[blk_index] = calc_min4(chn1[blk_index], chn2[blk_index], chn3[blk_index], chn4[blk_index]);
         }
     }
@@ -606,6 +610,11 @@ U8 lsc_process2(U16* raw, IMG_CONTEXT context, G_CONFIG cfg)
         gr[i] = (U16)((U32)gr[i] * chn[i] / GAIN_FACTOR);
         gb[i] = (U16)((U32)gb[i] * chn[i] / GAIN_FACTOR);
         b[i] = (U16)((U32)b[i] * chn[i] / GAIN_FACTOR);
+
+        r[i] = calc_min(r[i], cfg.lsc_max_gain);
+        gr[i] = calc_min(gr[i], cfg.lsc_max_gain);
+        gb[i] = calc_min(gb[i], cfg.lsc_max_gain);
+        b[i] = calc_min(b[i], cfg.lsc_max_gain);
 
     }
     write_csv("lsc_4_k.csv", r, gr, gb, b, cfg.lsc_wblock, cfg.lsc_hblock);

@@ -98,6 +98,7 @@ typedef struct _G_CONFIG
 	U16* lsc_grgain;
 	U16* lsc_gbgain;
 	U16* lsc_bgain;
+	U16 lsc_max_gain;
 
 	//isp_gain
 	U16 isp_gain;
