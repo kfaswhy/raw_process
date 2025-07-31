@@ -518,6 +518,9 @@ U8 lsc_process2(U16* raw, IMG_CONTEXT context, G_CONFIG cfg)
         }
     }
 
+    //统计信息
+    write_csv("lsc_stats.csv", chn1, chn2, chn3, chn4, cfg.lsc_wblock, cfg.lsc_hblock);
+
     //计算极值
     max_index = max_y * cfg.lsc_wblock + max_x;
     chn1_max = chn1[max_index];
@@ -542,6 +545,7 @@ U8 lsc_process2(U16* raw, IMG_CONTEXT context, G_CONFIG cfg)
             //chn3[blk_index] = (U16)((U32)chn3_max * GAIN_FACTOR / chn3[blk_index]);
             //chn4[blk_index] = (U16)((U32)chn4_max * GAIN_FACTOR / chn4[blk_index]);
             chn[blk_index] = calc_min4(chn1[blk_index], chn2[blk_index], chn3[blk_index], chn4[blk_index]);
+            chn[blk_index] = calc_max(chn[blk_index], 1);
         }
     }
 
@@ -614,11 +618,10 @@ U8 lsc_process2(U16* raw, IMG_CONTEXT context, G_CONFIG cfg)
         gb[i] = (U16)((U32)gb[i] * chn[i] / GAIN_FACTOR);
         b[i] = (U16)((U32)b[i] * chn[i] / GAIN_FACTOR);
 
-        r[i] = calc_min(r[i], cfg.lsc_max_gain);
-        gr[i] = calc_min(gr[i], cfg.lsc_max_gain);
-        gb[i] = calc_min(gb[i], cfg.lsc_max_gain);
-        b[i] = calc_min(b[i], cfg.lsc_max_gain);
-
+        r[i] = clp_range(GAIN_FACTOR, r[i], cfg.lsc_max_gain);
+        gr[i] = clp_range(GAIN_FACTOR, gr[i], cfg.lsc_max_gain);
+        gb[i] = clp_range(GAIN_FACTOR, gb[i], cfg.lsc_max_gain);
+        b[i] = clp_range(GAIN_FACTOR, b[i], cfg.lsc_max_gain);
     }
     write_csv("lsc_4_k.csv", r, gr, gb, b, cfg.lsc_wblock, cfg.lsc_hblock);
 
