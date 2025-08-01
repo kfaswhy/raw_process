@@ -94,11 +94,14 @@ typedef struct _G_CONFIG
 	U8 lsc_type; 	/* 使用flat shading还是interpolation shading，1为flat，0为插值 */
 	U8 lsc_wblock;
 	U8 lsc_hblock;
+	U16 lsc_max_gain;
+	float luma_str;  //亮度补偿强度
+	U8 lsc_gic_on;   //校正lsc时是否做绿平衡
 	U16* lsc_rgain;
 	U16* lsc_grgain;
 	U16* lsc_gbgain;
 	U16* lsc_bgain;
-	U16 lsc_max_gain;
+
 
 	//isp_gain
 	U16 isp_gain;

@@ -38,7 +38,9 @@ void load_cfg(G_CONFIG* cfg)
     cfg->lsc_type = 0; //0Îª²åÖµ
     cfg->lsc_wblock = 17;
     cfg->lsc_hblock = 17;
-    cfg->lsc_max_gain = 8192;
+    cfg->luma_str = 0.0;
+    cfg->lsc_max_gain = 4096;
+    cfg->lsc_gic_on = 1;
 #if 1
     U16 lsc_tmpr[] = {
     3850,2531,2240,2065,1949,1860,1811,1759,1725,1703,1694,1693,1718,1788,2007,4125,5451,
