@@ -442,9 +442,6 @@ U8 lsc_process2(U16* raw, IMG_CONTEXT context, G_CONFIG cfg)
         return OK;
     }
 
-    //校正强度
-    float k = 0.2;
-
     U16* chn1 = (U16*)malloc(cfg.lsc_wblock * cfg.lsc_hblock * sizeof(U16));
     U16* chn2 = (U16*)malloc(cfg.lsc_wblock * cfg.lsc_hblock * sizeof(U16));
     U16* chn3 = (U16*)malloc(cfg.lsc_wblock * cfg.lsc_hblock * sizeof(U16));
@@ -603,7 +600,7 @@ U8 lsc_process2(U16* raw, IMG_CONTEXT context, G_CONFIG cfg)
 
     for (U16 i = 0; i < cfg.lsc_hblock * cfg.lsc_wblock; i++)
     {
-        chn[i] = (chn[i] - GAIN_FACTOR) * k + GAIN_FACTOR;
+        chn[i] = (chn[i] - GAIN_FACTOR) * cfg.luma_str + GAIN_FACTOR;
     }
     write_csv("lsc_3_kluma.csv", chn, chn, chn, chn, cfg.lsc_wblock, cfg.lsc_hblock);
 
@@ -614,6 +611,13 @@ U8 lsc_process2(U16* raw, IMG_CONTEXT context, G_CONFIG cfg)
         gr[i] = (U16)((U32)gr[i] * chn[i] / GAIN_FACTOR);
         gb[i] = (U16)((U32)gb[i] * chn[i] / GAIN_FACTOR);
         b[i] = (U16)((U32)b[i] * chn[i] / GAIN_FACTOR);
+
+        if (cfg.lsc_gic_on)
+        {
+            U16 tmp = (gr[i] + gb[i] + 1) / 2;
+            gr[i] = tmp;
+            gb[i] = tmp;
+        }
 
         r[i] = clp_range(GAIN_FACTOR, r[i], cfg.lsc_max_gain);
         gr[i] = clp_range(GAIN_FACTOR, gr[i], cfg.lsc_max_gain);
