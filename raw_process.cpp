@@ -217,7 +217,66 @@ RGB* raw2rgb(U16* raw, IMG_CONTEXT context, G_CONFIG cfg) {
 					pixel.b = 0;
 				}
 				break;
-				// Other patterns (GRBG, GBRG, BGGR) can be implemented similarly
+			case GRBG:
+				if ((y % 2 == 0) && (x % 2 == 0)) //GR
+				{
+					val = raw[y * width + x] >> bit_shift;
+					pixel.g = clp_range(0, val, max_rgb);
+					pixel.r = 0;
+					pixel.b = 0;
+				}
+				else if ((y % 2 == 0) && (x % 2 == 1)) //R
+				{
+					val = raw[y * width + x] >> bit_shift;
+					pixel.g = 0;
+					pixel.r = clp_range(0, val, max_rgb);
+					pixel.b = 0;
+				}
+				else if ((y % 2 == 1) && (x % 2 == 0)) //B
+				{
+					val = raw[y * width + x] >> bit_shift;
+					pixel.g = 0;
+					pixel.r = 0;
+					pixel.b = clp_range(0, val, max_rgb);
+				}
+				else //GB
+				{
+					val = raw[y * width + x] >> bit_shift;
+					pixel.g = clp_range(0, val, max_rgb);
+					pixel.r = 0;
+					pixel.b = 0;
+				}
+				break;
+			case GBRG:
+				if ((y % 2 == 0) && (x % 2 == 0)) //GR
+				{
+					val = raw[y * width + x] >> bit_shift;
+					pixel.g = clp_range(0, val, max_rgb);
+					pixel.r = 0;
+					pixel.b = 0;
+				}
+				else if ((y % 2 == 0) && (x % 2 == 1)) //B
+				{
+					val = raw[y * width + x] >> bit_shift;
+					pixel.g = 0;
+					pixel.r = 0;
+					pixel.b = clp_range(0, val, max_rgb);
+				}
+				else if ((y % 2 == 1) && (x % 2 == 0)) //R
+				{
+					val = raw[y * width + x] >> bit_shift; 
+					pixel.g = 0;
+					pixel.r = clp_range(0, val, max_rgb);
+					pixel.b = 0;
+				}
+				else //GB
+				{
+					val = raw[y * width + x] >> bit_shift;
+					pixel.g = clp_range(0, val, max_rgb);
+					pixel.r = 0;
+					pixel.b = 0;
+				}
+				break;
 			default:
 				fprintf(stderr, "Unsupported Bayer Pattern.\n");
 				free(rgb_data);
