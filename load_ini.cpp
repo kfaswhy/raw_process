@@ -9,7 +9,7 @@ void load_cfg(G_CONFIG* cfg)
 	cfg->bit = 16;
 	cfg->used_bit = 10;
 	cfg->order = LITTLE_ENDIAN;
-	cfg->pattern = RGGB;
+	cfg->pattern = GRBG;
 	cfg->width = 992;
 	cfg->height = 992;
 
@@ -18,7 +18,7 @@ void load_cfg(G_CONFIG* cfg)
 
 	cfg->ob_on = 1;
 	cfg->lsc_on = 0;
-	cfg->isp_gain_on = 0;
+	cfg->isp_gain_on = 1;
 	cfg->awb_on = 1;
 	cfg->ltm_on = 0;
 	cfg->ccm_on = 1;
@@ -116,8 +116,7 @@ void load_cfg(G_CONFIG* cfg)
     };
 #endif
 
-    cfg->isp_gain = 1024 * 1.5;
-    cfg->isp_gain = 1024 * 1.5;
+    cfg->isp_gain = 1024 * 20;
 
 	cfg->r_gain = 1024 * 1.95;
 	cfg->g_gain = 1024 * 1;
