@@ -144,7 +144,56 @@ RGB* demosaic_process(U16* raw, IMG_CONTEXT context, G_CONFIG cfg) {
 					pixel.b = clp_range(0, val, rgb_max);
 				}
 				break;
-				// Other patterns (GRBG, GBRG, BGGR) can be implemented similarly
+			case GRBG:
+				if ((y % 2 == 0) && (x % 2 == 0)) //GR
+				{
+					val = ((U32)raw[top * width + x] + raw[bottom * width + x]) >> (1 + bit_shift);
+					pixel.b = clp_range(0, val, rgb_max);
+
+					val = raw[y * width + x] >> bit_shift;
+					pixel.g = clp_range(0, val, rgb_max);
+
+					val = ((U32)raw[y * width + left] + raw[y * width + right]) >> (1 + bit_shift);
+					pixel.r = clp_range(0, val, rgb_max);
+				}
+				else if ((y % 2 == 0) && (x % 2 == 1)) //R
+				{
+					val = raw[y * width + x] >> bit_shift;
+					pixel.r = clp_range(0, val, rgb_max);
+
+					val = ((U32)raw[y * width + left] + raw[y * width + right] +
+						raw[top * width + x] + raw[bottom * width + x]) >> (2 + bit_shift);
+					pixel.g = clp_range(0, val, rgb_max);
+
+					val = ((U32)raw[top * width + left] + raw[top * width + right] +
+						raw[bottom * width + left] + raw[bottom * width + right]) >> (2 + bit_shift);
+					pixel.b = clp_range(0, val, rgb_max);
+				}
+				else if ((y % 2 == 1) && (x % 2 == 0)) //B
+				{
+					val = raw[y * width + x] >> bit_shift;
+					pixel.b = clp_range(0, val, rgb_max);
+
+					val = ((U32)raw[y * width + left] + raw[y * width + right] +
+						raw[top * width + x] + raw[bottom * width + x]) >> (2 + bit_shift);
+					pixel.g = clp_range(0, val, rgb_max);
+
+					val = ((U32)raw[top * width + left] + raw[top * width + right] +
+						raw[bottom * width + left] + raw[bottom * width + right]) >> (2 + bit_shift);
+					pixel.r = clp_range(0, val, rgb_max);
+				}
+				else //GB
+				{
+					val = raw[y * width + x] >> bit_shift;
+					pixel.g = clp_range(0, val, rgb_max);
+
+					val = ((U32)raw[top * width + x] + raw[bottom * width + x]) >> (1 + bit_shift);
+					pixel.r = clp_range(0, val, rgb_max);
+
+					val = ((U32)raw[y * width + left] + raw[y * width + right]) >> (1 + bit_shift);
+					pixel.b = clp_range(0, val, rgb_max);
+				}
+				break;
 			default:
 				fprintf(stderr, "Unsupported Bayer Pattern.\n");
 				free(rgb_data);
