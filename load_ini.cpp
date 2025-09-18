@@ -9,9 +9,9 @@ void load_cfg(G_CONFIG* cfg)
 	cfg->bit = 16;
 	cfg->used_bit = 10;
 	cfg->order = LITTLE_ENDIAN;
-	cfg->pattern = GRBG;
-	cfg->width = 992;
-	cfg->height = 992; 
+	cfg->pattern = GBRG;
+	cfg->width = 720;
+	cfg->height = 720; 
 
 	cfg->rgb_bit = 16;
 	cfg->yuv_bit = 16;
@@ -22,7 +22,7 @@ void load_cfg(G_CONFIG* cfg)
 	cfg->gic_on = 1;
 	cfg->awb_on = 1;
 	cfg->ltm_on = 0;
-	cfg->ccm_on = 1;
+	cfg->ccm_on = 1; 
 	cfg->rgbgamma_on = 1;
 	cfg->defog_on = 0;
 	//cfg->ygamma_on = 0;
