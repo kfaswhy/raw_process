@@ -9,21 +9,21 @@ void load_cfg(G_CONFIG* cfg)
     cfg->bit = 16;
     cfg->used_bit = 10;
     cfg->order = LITTLE_ENDIAN;
-    cfg->pattern = BGGR;
-    cfg->width = 1280;
-    cfg->height = 720;
+    cfg->pattern = RGGB;
+    cfg->width = 3840;
+    cfg->height = 2160;
 
     cfg->rgb_bit = 16;
     cfg->yuv_bit = 16;
 
-    cfg->ob_on = 0;
-    cfg->lsc_on = 1;
+    cfg->ob_on = 1;
+    cfg->lsc_on = 0;
     cfg->isp_gain_on = 0;
-    cfg->gic_on = 1;
-    cfg->awb_on = 0;
+    cfg->gic_on = 0;
+    cfg->awb_on = 1;
     cfg->ltm_on = 0;
-    cfg->ccm_on = 0;
-    cfg->rgbgamma_on = 0;
+    cfg->ccm_on = 1;
+    cfg->rgbgamma_on = 1;
     cfg->defog_on = 0;
     //cfg->ygamma_on = 0;
     cfg->sharp_on = 0;
@@ -120,14 +120,14 @@ void load_cfg(G_CONFIG* cfg)
     };
 #endif
 
-    cfg->isp_gain = 1024 * 1.5;
+    cfg->isp_gain = 1024 * 1.02;
 
     cfg->gic_str = 0.8;
     cfg->gic_thd = 1.25;
 
-    cfg->r_gain = 1024 * 1.79;
+    cfg->r_gain = 1024 * 1.21;
     cfg->g_gain = 1024 * 1;
-    cfg->b_gain = 1024 * 1.79;
+    cfg->b_gain = 1024 * 3;
 
 
     cfg->ltm_r = 20;
@@ -137,11 +137,8 @@ void load_cfg(G_CONFIG* cfg)
 
 
     float ccm_tmp[9] = {
-1.4,-0.2,-0.2,
--0.7,1.7,0,
--0.6,0.3,1.3
 
-
+1
     };
 
     cfg->defog_smp_ratio = 4;
