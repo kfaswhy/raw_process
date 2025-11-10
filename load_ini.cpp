@@ -34,7 +34,6 @@ void load_cfg(G_CONFIG* cfg)
     //12->16bit
     cfg->ob = 64 * 16;
 
-
     cfg->lsc_type = 0; //0Îª²åÖµ
     cfg->lsc_wblock = 17;
     cfg->lsc_hblock = 17;
@@ -138,7 +137,7 @@ void load_cfg(G_CONFIG* cfg)
 
     float ccm_tmp[9] = {
 1.19, 0.12, -0.42,
--0.22, 1.64, -0.59,
+-0.3, 1.72, -0.59,
 0.04, -0.76, 2.00
     };
 
