@@ -163,7 +163,7 @@ void load_cfg(G_CONFIG* cfg)
 
     cfg->txi_r_detail = 1;
     cfg->txi_r_bifilter = 1;
-    cfg->txi_str = 15;
+    cfg->txi_str = 8;
 
     //以下后处理
     U16 lsc_blk = cfg->lsc_wblock * cfg->lsc_hblock;
