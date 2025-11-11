@@ -20,15 +20,15 @@ void load_cfg(G_CONFIG* cfg)
     cfg->lsc_on = 0;
     cfg->isp_gain_on = 0;
     cfg->gic_on = 1;
-    cfg->awb_on = 0;
+    cfg->awb_on = 1;
     cfg->ltm_on = 0;
     cfg->ccm_on = 1;
     cfg->rgbgamma_on = 1;
     cfg->defog_on = 1;
     //cfg->ygamma_on = 0;
     cfg->sharp_on = 1;
-    cfg->ynr_on = 0;
-    cfg->cnr_on = 0;
+    cfg->ynr_on = 1;
+    cfg->cnr_on = 1;
     cfg->yuv_txi_on = 1;
 
     //12->16bit
@@ -122,9 +122,9 @@ void load_cfg(G_CONFIG* cfg)
     cfg->gic_str = 0.8;
     cfg->gic_thd = 1.25;
 
-    cfg->r_gain = 1024 * 1.79;
+    cfg->r_gain = 1024 * 1.895;
     cfg->g_gain = 1024 * 1;
-    cfg->b_gain = 1024 * 1.79;
+    cfg->b_gain = 1024 * 1.93;
 
 
     cfg->ltm_r = 20;
@@ -134,16 +134,16 @@ void load_cfg(G_CONFIG* cfg)
 
 
     float ccm_tmp[9] = {
-1.4,-0.2,-0.2,
--0.7,1.7,0,
--0.6,0.3,1.3
+1.69, - 0.64, - 0.04,
+- 0.21, 	1.50, - 0.29,
+- 0.01, - 0.43, 	1.43
 
 
     };
 
     cfg->defog_smp_ratio = 4;
     cfg->light_ratio = 1.0;
-    cfg->defog_str = 0.15;
+    cfg->defog_str = 0.3;
 
     U32 gamma_xtmp[GAMMA_LENGTH] =
     {
@@ -160,7 +160,7 @@ void load_cfg(G_CONFIG* cfg)
 
     cfg->txi_r_detail = 1;
     cfg->txi_r_bifilter = 1;
-    cfg->txi_str = 5;
+    cfg->txi_str = 15;
 
     //以下后处理
     U16 lsc_blk = cfg->lsc_wblock * cfg->lsc_hblock;
