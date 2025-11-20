@@ -7,11 +7,28 @@ U8 sharp_process(YUV* yuv, IMG_CONTEXT context, G_CONFIG cfg) {
 
 	U16 y_max = (1 << cfg.yuv_bit) - 1;
 	U16* y = (U16*)malloc(context.full_size * sizeof(U16));
-	U16* tmp = (U16*)malloc(context.full_size * sizeof(U16));
+	S32* y_em = (S32*)malloc(context.full_size * sizeof(S32));
 	memcpy(y, yuv->y, context.full_size * sizeof(U16));
 #if DEBUG_MODE
-	save_y("sharp_0_y.bmp", y, context.width, context.height, cfg.yuv_bit, 100);
+	save_y("sharp_0_y.jpg", y, context.width, context.height, cfg.yuv_bit, 100);
 #endif
+
+	//1. 边缘响应EM提取
+	y_em = calc_edge_em_3x5(y, context.width, context.height);
+#if DEBUG_MODE
+	U16* em_tmp = (U16*)malloc(context.full_size * sizeof(U16));
+	for (U32 i = 0; i < context.full_size; i++) 
+	{
+		em_tmp[i] = calc_abs(y_em[i]);
+	}
+	save_y("sharp_1_em.jpg", em_tmp, context.width, context.height, cfg.yuv_bit, 100);
+#endif
+	//2. 边缘响应映射EMLut修正
+	//3. Avg 平滑替代
+	//4. 边缘增强叠加
+	//
+
+
 
 
 #if DEBUG_MODE
@@ -22,6 +39,69 @@ U8 sharp_process(YUV* yuv, IMG_CONTEXT context, G_CONFIG cfg) {
 	return OK;
 }
 
+S32* calc_edge_em_3x5(U16* y, int width, int height)
+{
+	const int pad_w = 2;
+	const int pad_h = 1;
+	const int pad_width = width + pad_w * 2;
+	const int pad_height = height + pad_h * 2;
+
+	// 分配带边界填充的缓冲区
+	U16* y_pad = (U16*)malloc(pad_width * pad_height * sizeof(U16));
+	if (!y_pad)
+		return NULL;
+
+	// 边界反射填充
+	for (int y_idx = 0; y_idx < pad_height; y_idx++) {
+		int src_y = y_idx - pad_h;
+		if (src_y < 0)
+			src_y = -src_y - 1;
+		else if (src_y >= height)
+			src_y = 2 * height - src_y - 1;
+
+		for (int x_idx = 0; x_idx < pad_width; x_idx++) {
+			int src_x = x_idx - pad_w;
+			if (src_x < 0)
+				src_x = -src_x - 1;
+			else if (src_x >= width)
+				src_x = 2 * width - src_x - 1;
+
+			y_pad[y_idx * pad_width + x_idx] = y[src_y * width + src_x];
+		}
+	}
+
+	// 分配输出 EM 图
+	S32* em = (S32*)malloc(width * height * sizeof(S32));
+	if (!em) {
+		free(y_pad);
+		return NULL;
+	}
+
+	// 3x5 边缘检测核
+	const int kernel[3][5] = {
+		{-1, 0, -1, 0, -1},
+		{-1, 0,  8, 0, -1},
+		{-1, 0, -1, 0, -1}
+	};
+
+	// 卷积计算 EM
+	for (int y_idx = 0; y_idx < height; y_idx++) {
+		for (int x_idx = 0; x_idx < width; x_idx++) {
+			S32 acc = 0;
+			for (int ky = 0; ky < 3; ky++) {
+				for (int kx = 0; kx < 5; kx++) {
+					int yy = y_idx + ky;
+					int xx = x_idx + kx;
+					acc += (S32)y_pad[yy * pad_width + xx] * kernel[ky][kx];
+				}
+			}
+			em[y_idx * width + x_idx] = acc >> 3; // 除以 8
+		}
+	}
+
+	free(y_pad);
+	return em;
+}
 
 U8 sharp_process_bak(YUV* yuv, IMG_CONTEXT context, G_CONFIG cfg) {
 	if (cfg.sharp_on == 0) {
