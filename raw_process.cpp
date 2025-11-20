@@ -70,8 +70,6 @@ int main()
 	ccm_process(rgb_data, context, cfg);
 	rgbgamma_process(rgb_data, context, cfg);
 	defog_process(rgb_data, context, cfg);
-
-
 	yuv_data = r2y_process(rgb_data, context, cfg);
 
 	//进入YUV域
@@ -79,8 +77,6 @@ int main()
 	cnr_process(yuv_data, context, cfg);
 	sharp_process(yuv_data, context, cfg);
 	yuv_txi_process(yuv_data, context, cfg);
-	
-
 
 	//结束
 	rgb_data = y2r_process(yuv_data, context, cfg);
