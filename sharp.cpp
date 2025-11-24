@@ -7,8 +7,11 @@ U8 sharp_process(YUV* yuv, IMG_CONTEXT context, G_CONFIG cfg) {
 
 	U16 y_max = (1 << cfg.yuv_bit) - 1;
 	U16* y = (U16*)malloc(context.full_size * sizeof(U16));
+    if (!y) return ERROR;
+    memcpy(y, yuv->y, context.full_size * sizeof(U16));
+
 	S32* y_em = (S32*)malloc(context.full_size * sizeof(S32));
-	memcpy(y, yuv->y, context.full_size * sizeof(U16));
+	
 #if DEBUG_MODE
 	save_y("sharp_0_y.jpg", y, context.width, context.height, cfg.yuv_bit, 100);
 #endif
