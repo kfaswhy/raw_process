@@ -524,6 +524,14 @@ U8 lsc_process2(U16* raw, IMG_CONTEXT context, G_CONFIG cfg)
     chn2_max = chn2[max_index];
     chn3_max = chn3[max_index];
     chn4_max = chn4[max_index];
+
+    //chn1_max = 17785;
+    //chn2_max = 18789;
+    //chn3_max = 18438;
+    //chn4_max = 3079;
+
+
+
     LOG("max_blk = [%u ,%u, %u£¬%u] at (%u,%u).",
         chn1_max, chn2_max, chn3_max, chn4_max, max_x, max_y);
 
