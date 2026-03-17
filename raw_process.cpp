@@ -59,7 +59,7 @@ int main()
 
 	//进入raw域
 	ob_process(raw, context, cfg);
-	lsc_process(raw, context, cfg);
+	lsc_process2(raw, context, cfg);
 	isp_gain_process(raw, context, cfg);
 	gic_process(raw, context, cfg);
 	awb_process(raw, context, cfg);
