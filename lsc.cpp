@@ -515,6 +515,9 @@ U8 lsc_process2(U16* raw, IMG_CONTEXT context, G_CONFIG cfg)
         }
     }
 
+    //max_x = 9;
+    //max_y = 9;
+
     //统计信息
     write_csv("lsc_stats.csv", chn1, chn2, chn3, chn4, cfg.lsc_wblock, cfg.lsc_hblock);
 
@@ -526,6 +529,8 @@ U8 lsc_process2(U16* raw, IMG_CONTEXT context, G_CONFIG cfg)
     chn4_max = chn4[max_index];
     LOG("max_blk = [%u ,%u, %u，%u] at (%u,%u).",
         chn1_max, chn2_max, chn3_max, chn4_max, max_x, max_y);
+
+
 
     //计算总增益
     for (U8 i = 0; i < cfg.lsc_hblock; i++)
