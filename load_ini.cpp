@@ -127,9 +127,9 @@ void load_cfg(G_CONFIG* cfg)
     cfg->gic_str = 0.8;
     cfg->gic_thd = 1.25;
      
-    cfg->r_gain = 1024 * 2.48;
+    cfg->r_gain = 1024 * 1;
     cfg->g_gain = 1024 * 1; 
-    cfg->b_gain = 1024 * 1;
+    cfg->b_gain = 1024 * 1.4;
 
 
     cfg->ltm_r = 20;
@@ -139,10 +139,9 @@ void load_cfg(G_CONFIG* cfg)
 
 
     float ccm_tmp[9] = {
-0.50,1.20, - 0.99,
-0.30, - 0.10 	,1.09,
-0.20, - 0.09 ,	0.79,
-
+0.00, 	1.00, - 0.21,
+0.00, - 0.48, 	1.20,
+0.00, - 0.40, 	1.00
     };
 
 
