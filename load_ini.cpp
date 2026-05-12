@@ -16,11 +16,11 @@ void load_cfg(G_CONFIG* cfg)
     cfg->rgb_bit = 16;
     cfg->yuv_bit = 16;
 
-    cfg->ob_on = 1;
+    cfg->ob_on = 0;
     cfg->lsc_on = 0;
     cfg->isp_gain_on = 1;
     cfg->gic_on = 0;
-    cfg->awb_on = 1;
+    cfg->awb_on = 0;
     cfg->ltm_on = 0;
     cfg->ccm_on = 1;
     cfg->rgbgamma_on = 1;
@@ -29,7 +29,7 @@ void load_cfg(G_CONFIG* cfg)
     cfg->sharp_on = 0;
     cfg->ynr_on = 0;
     cfg->cnr_on = 0;
-    cfg->yuv_txi_on = 0;
+    cfg->yuv_txi_on = 1;
 
     //12->16bit
     cfg->ob = 200 * 16;
@@ -120,7 +120,7 @@ void load_cfg(G_CONFIG* cfg)
     };
 #endif
 
-    cfg->isp_gain = 1024 * 2.65;
+    cfg->isp_gain = 1024 * 0.72;
 
     cfg->gic_str = 0.8;
     cfg->gic_thd = 1.25;
@@ -137,9 +137,11 @@ void load_cfg(G_CONFIG* cfg)
 
 
     float ccm_tmp[9] = {
-0.48, 0.13, 0.25,
--0.20, 0.93, 0.10,
-0.08, -0.38, 1.10
+0.75 ,	0.14, 	0.11,
+- 0.58 ,	1.76 ,- 0.25,
+- 0.12, - 0.95 	,2.06
+
+
 
 //  0.8141 ,  0.2127 ,  0.0227,
 //- 0.1045  , 1.3023, - 0.1939,
@@ -164,9 +166,9 @@ void load_cfg(G_CONFIG* cfg)
     cfg->ynr_r = 1;
     cfg->cnr_r = 3;
 
-    cfg->txi_r_detail = 1;
+    cfg->txi_r_detail = 3;
     cfg->txi_r_bifilter = 1;
-    cfg->txi_str = 5;
+    cfg->txi_str = 10;
 
     //以下后处理
     U16 lsc_blk = cfg->lsc_wblock * cfg->lsc_hblock;
