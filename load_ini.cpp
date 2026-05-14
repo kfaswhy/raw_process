@@ -24,7 +24,7 @@ void load_cfg(G_CONFIG* cfg)
     cfg->ltm_on = 0;
     cfg->ccm_on = 1;
     cfg->rgbgamma_on = 1;
-    cfg->defog_on = 0;
+    cfg->defog_on = 1;
     //cfg->ygamma_on = 0;
     cfg->sharp_on = 0;
     cfg->ynr_on = 1;
@@ -126,9 +126,9 @@ void load_cfg(G_CONFIG* cfg)
     cfg->gic_str = 0.8;
     cfg->gic_thd = 1.25;
 
-    cfg->r_gain = 1024 * 1.43;
+    cfg->r_gain = 1024 * 1.85;
     cfg->g_gain = 1024 * 1;
-    cfg->b_gain = 1024 * 1.48;
+    cfg->b_gain = 1024 * 1.85;
 
 
     cfg->ltm_r = 20;
@@ -138,17 +138,14 @@ void load_cfg(G_CONFIG* cfg)
 
 
     float ccm_tmp[9] = {
-1.00, - 0.24 ,	0.41,
-- 0.32 ,	1.16, 	0.08,
-- 0.25, - 0.24 	,1.49
-
-
-
+0.71, -0.23, 0.43,
+-0.27, 1.24, 0.08,
+-0.18, -0.31, 1.29
     };
 
     cfg->defog_smp_ratio = 4;
     cfg->light_ratio = 1.0;
-    cfg->defog_str = 0.15;
+    cfg->defog_str = 0.3;
 
     U32 gamma_xtmp[GAMMA_LENGTH] =
     {
