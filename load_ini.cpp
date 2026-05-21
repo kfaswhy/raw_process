@@ -142,10 +142,6 @@ void load_cfg(G_CONFIG* cfg)
 0.21, - 0.21, 	1.41,
 0.03, - 0.20, 	1.07
 
-
-
-
-
     };
 
     cfg->defog_smp_ratio = 4;
