@@ -58,7 +58,7 @@ int main()
 	time_print_prog_start = clock();
 
 	//进入raw域
-	ob_process(raw, context, cfg);
+	ob_process2(raw, context, cfg);
 	lsc_process(raw, context, cfg);
 	isp_gain_process(raw, context, cfg);
 	gic_process(raw, context, cfg);
